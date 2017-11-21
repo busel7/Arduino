@@ -2,8 +2,8 @@
 
 Pin on  DMD P10     GPIO      NODEMCU               Pin on  DS3231      NODEMCU           Pin on  Buzzer       NODEMCU
 
-        A           GPIO16    D0                            SCL         D1                        +            D4
-        B           GPIO12    D6                            SDA         D2                        -            GND
+        A           GPIO16    D0                            SCL         D1 (GPIO 5)                       +            RX (GPIO 3)
+        B           GPIO12    D6                            SDA         D2 (GPIO 4)                       -            GND
         CLK         GPIO14    D5                            VCC         3V
         SCK         GPIO0     D3                            GND         GND
         R           GPIO13    D7
@@ -13,11 +13,12 @@ Pin on  DMD P10     GPIO      NODEMCU               Pin on  DS3231      NODEMCU 
 Catatan : 
 
 o Perlu Power Eksternal 5V ke LED P10.
-o Saat Flashing (upload program) akan bunyi beep terus karena buzzer menggunakan pin D4 (TXD1) cabut sementara jika mengganggu.
+o Saat Flashing (upload program) cabut sementara pin RX untuk buzzer.
 
 */
 
 #include <SPI.h>
+#include <EEPROM.h>
 
 #include <Wire.h>
 #include <Sodaq_DS3231.h>
@@ -40,13 +41,13 @@ byte value_iqmh=1, value_ihti=2, value_hari;
 //byte S_IQMH = 0, S_IHTI = 0, S_HARI = 0;
 
 // BUZZER
-const int buzzer = 2; // Pin GPIO Buzzer - D4
+const int buzzer = 3; // Pin GPIO Buzzer - RX
 
 //SETUP RTC
 //year, month, date, hour, min, sec and week-day(starts from 0 and goes to 6)
 //writing any non-existent time-data may interfere with normal operation of the RTC.
 //Take care of week-day also.
-//DateTime dt(2017, 11, 21, 12, 37, 0, 1);
+//DateTime dt(2017, 11, 21, 15, 52, 0, 1);
 char weekDay[][7] = {"SENIN ", "SELASA", " RABU ", "KAMIS ", "JUM'AT", "SABTU ", " AHAD ", "SENIN "}; // array hari, dihitung mulai dari senin, hari senin angka nya =0,
 char monthYear[][4] = { " ", "JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES" };
 
@@ -69,6 +70,8 @@ void setup() {
 
   //Buzzer
   pinMode(buzzer, OUTPUT);      // inisiasi pin untuk buzzer
+  digitalWrite(buzzer, LOW);
+  delay(50);
 
 //  attachInterrupt(0, Setting, FALLING);
   Buzzer();
