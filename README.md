@@ -2,7 +2,7 @@
 
 ## JWS - Jadwal Waktu Sholat
 
-Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3241 dan BUZZER
+Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3231 dan BUZZER
 
 ### FITUR
 
@@ -14,7 +14,7 @@ Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3241 
 - Hitung Mundur Iqomah
 - Jam Kecil pada baris atas dan Update scroll teks malului Wifi pada baris bawah
 
-### Pin on DMD
+### Pin on DMD LED P10 Panel
 
 | DMD P10 | GPIO | NODEMCU | 
 | ------- | ---- | ------- |
@@ -42,6 +42,10 @@ Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3241 
 | +      | RX (GPIO 3) |
 | -      | GND         |
 
+### Library
+DMD2 : https://github.com/freetronics/DMD2
+PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
+RTC DS3231 : https://github.com/SodaqMoja/Sodaq_DS3231
         
 ### Catatan : 
 - Perlu Power Eksternal 5V ke LED P10.
