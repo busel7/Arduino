@@ -42,10 +42,10 @@ Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3231 
 | +      | RX (GPIO 3) |
 | -      | GND         |
 
-### Library
-DMD2 : https://github.com/freetronics/DMD2
-PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
-RTC DS3231 : https://github.com/SodaqMoja/Sodaq_DS3231
+### Eksternal Library
+- DMD2 : https://github.com/freetronics/DMD2
+- PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
+- RTC DS3231 : https://github.com/SodaqMoja/Sodaq_DS3231
         
 ### Catatan : 
 - Perlu Power Eksternal 5V ke LED P10.
