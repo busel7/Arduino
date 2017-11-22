@@ -1,7 +1,7 @@
 /*
  * JADWAL WAKTU SHOLAT MENGGUNAKAN NODEMCU ESP8266, LED P10, RTC DS3241, BUZZER
- * FITUR :      JADWAL SHOLAT 5 WAKTU, JAM BESAR, TANGGAL, SUHU, ALARAM ADZAN,
- *              DAN HITUNG MUNDUR IQOMAH DAN UPDATE SCROLL TEKS MALALUI WIFI.
+ * FITUR :  JADWAL SHOLAT 5 WAKTU DAN TANBIH IMSAK, JAM BESAR, TANGGAL, SUHU, ALARAM ADZAN DAN TANBIH IMSAK,
+ *          DAN HITUNG MUNDUR IQOMAH DAN UPDATE SCROLL TEKS MALALUI WIFI.
  * 
 
 Pin on  DMD P10     GPIO      NODEMCU               Pin on  DS3231      NODEMCU                   Pin on  Buzzer       NODEMCU
@@ -52,15 +52,13 @@ byte value_iqmh=1, value_ihti=2, value_hari;
 const int buzzer = 3; // Pin GPIO Buzzer - RX
 
 //SETUP RTC
-//year, month, date, hour, min, sec and week-day(starts from 0 and goes to 6)
-//writing any non-existent time-data may interfere with normal operation of the RTC.
-//Take care of week-day also.
+//year, month, date, hour, min, sec and week-day(Senin 0 sampai Ahad 6)
 //DateTime dt(2017, 11, 21, 15, 52, 0, 1);
 char weekDay[][7] = {"SENIN ", "SELASA", " RABU ", "KAMIS ", "JUM'AT", "SABTU ", " AHAD ", "SENIN "}; // array hari, dihitung mulai dari senin, hari senin angka nya =0,
 char monthYear[][4] = { " ", "JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES" };
 
 //SETUP DMD
-SPIDMD dmd(1,1);  // DMD controls the entire display
+SPIDMD dmd(1,1);  // Jumlah Panel P10 yang digunakan (KOLOM,BARIS)
 DMD_TextBox box(dmd);  // "box" provides a text box to automatically write to/scroll the display
 
 //SETUP WIFI AP
@@ -74,14 +72,14 @@ String value;
 WiFiServer server(80);
 
 
-// the setup routine runs once when you press reset:
+// setup rutinitas yang hanya dilakukan satu kali saat tekan reset:
 void setup() {
   Serial.begin(115200);
 
   //RTC D3231
   Wire.begin();
   rtc.begin();
-  //rtc.setDateTime(dt); //Adjust date-time as defined 'dt' above (ini untuk setting jam)
+  //rtc.setDateTime(dt); // Setting tanggal dan waktu untuk disimpan di RTC DS3231 sesuai parameter Datetime dt() di atas
 
   //DMD
   dmd.begin();
@@ -91,7 +89,6 @@ void setup() {
   digitalWrite(buzzer, LOW);
   delay(50);
 
-  //attachInterrupt(0, Setting, FALLING);
   Buzzer();
 
   //WIFI AP
@@ -150,7 +147,7 @@ void setup() {
 long transisi = 0;
 
 
-// the loop routine runs over and over again forever:
+// loop rutinitas yang dijalankan berulang selamanya:
 void loop() {
 
   AlarmSholat(); // Banyak dipanggil class AlarmSholat() ini agar waktu sholat lebih akurat
@@ -209,13 +206,13 @@ void TampilJadwalSholat() {
 
   JadwalSholat();
 
-  String Teks;  
+  char sholat[7];
+  char jam[5];
+  char TimeName[][6] = {"SUBUH","TRBIT","DZUHR","ASHAR","TRBNM","MGHRB","ISYA'"};
+  int hours, minutes;
 
   for (int i=0;i<7;i++){
-    char sholat[7];
-    char jam[5];
-    char TimeName[][6] = {"SUBUH","TRBIT","DZUHR","ASHAR","TRBNM","MGHRB","ISYA'"};
-    int hours, minutes;
+
     get_float_time_parts(times[i], hours, minutes);
     if (i==0 || i==2 || i==3 || i==5 || i==6) { //Tampilkan hanya Subuh, Dzuhur, Ashar, Maghrib, Isya
       sprintf(sholat,"%s",TimeName[i]); 
@@ -231,6 +228,27 @@ void TampilJadwalSholat() {
       delay(2000);
     }
   }
+
+  //Tambahan Waktu Tanbih (Peringatan 10 menit sebelum mulai puasa) yang biasa disebut Imsak
+  
+  get_float_time_parts(times[0], hours, minutes);
+  minutes = minutes + ihti;
+  if (minutes < 11) {
+    minutes = 60 - minutes;
+    hours --;
+  } else {
+    minutes = minutes - 10 ;
+  }
+  sprintf(jam,"%02d:%02d",hours,minutes);     
+  dmd.clearScreen();
+  dmd.selectFont(Font3x5);
+  dmd.drawString(4,-2,"TANBIH");
+  dmd.selectFont(angka_2);
+  dmd.drawString(1,8,jam);
+  Serial.print("TANBIH");
+  Serial.println(" : ");
+  Serial.println(jam);
+  delay(2000);
   
 }
 
@@ -243,13 +261,40 @@ void AlarmSholat() {
   int Sec = now.second();
 
   JadwalSholat();
+  
   int hours, minutes;
 
+  // Tanbih atau Imsak
   get_float_time_parts(times[0], hours, minutes);
-  int jamsubuh = hours;
-  int menitsubuh = minutes+ihti;
+  minutes = minutes+ihti;
 
-  if (Hor == jamsubuh && Min == menitsubuh) {
+  if (minutes < 11) {
+    minutes = 60 - minutes;
+    hours --;
+  } else {
+    minutes = minutes - 10 ;
+  }
+  
+  if (Hor == hours && Min == minutes) {
+    dmd.clearScreen();
+    dmd.selectFont(Font3x5);
+    dmd.drawString(4, -2, "TANBIH"); //koordinat tampilan
+    dmd.drawString(6, 7, "IMSAK"); //koordinat tampilan
+    Buzzer();
+    Serial.println("TANBIH");
+    delay(10000);
+  }
+
+  // Subuh
+  get_float_time_parts(times[0], hours, minutes);
+  minutes = minutes+ihti;
+
+  if (minutes >= 60) {
+    minutes = minutes - 60;
+    hours ++;
+  }
+  
+  if (Hor == hours && Min == minutes) {
     dmd.clearScreen();
     dmd.selectFont(SystemFont5x7);
     dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
@@ -264,11 +309,16 @@ void AlarmSholat() {
     Iqomah();
   }
 
+  // Dzuhur
   get_float_time_parts(times[2], hours, minutes);
-  int jamdzuhur = hours;
-  int menitdzuhur = minutes+ihti;
+  minutes = minutes+ihti;
 
-  if (Hor == jamdzuhur && Min == menitdzuhur) {
+  if (minutes >= 60) {
+    minutes = minutes - 60;
+    hours ++;
+  }
+  
+  if (Hor == hours && Min == minutes) {
     dmd.clearScreen();
     dmd.selectFont(SystemFont5x7);
     dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
@@ -282,11 +332,16 @@ void AlarmSholat() {
     Iqomah();
   }
 
+  // Ashar
   get_float_time_parts(times[3], hours, minutes);
-  int jamashar = hours;
-  int menitashar = minutes+ihti;
+  minutes = minutes+ihti;
 
-  if (Hor == jamashar && Min == menitashar) {
+  if (minutes >= 60) {
+    minutes = minutes - 60;
+    hours ++;
+  }
+  
+  if (Hor == hours && Min == minutes) {
     dmd.clearScreen();
     dmd.selectFont(SystemFont5x7);
     dmd.drawString(1, 0, "ADZAN "); //koordinat tampilan
@@ -300,11 +355,16 @@ void AlarmSholat() {
     Iqomah();
   }
 
+  // Maghrib
   get_float_time_parts(times[5], hours, minutes);
-  int jammaghrib = hours;
-  int menitmaghrib = minutes+ihti;
+  minutes = minutes+ihti;
 
-  if (Hor == jammaghrib && Min == menitmaghrib) {
+  if (minutes >= 60) {
+    minutes = minutes - 60;
+    hours ++;
+  }
+  
+  if (Hor == hours && Min == minutes) {
     dmd.clearScreen();
     dmd.selectFont(SystemFont5x7);
     dmd.drawString(1, 0, "ADZAN "); //koordinat tampilan
@@ -318,11 +378,16 @@ void AlarmSholat() {
     Iqomah();
   }
 
+  // Isya'
   get_float_time_parts(times[6], hours, minutes);
-  int jamisya = hours;
-  int menitisya = minutes+ihti;
+  minutes = minutes+ihti;
 
-  if (Hor == jamisya && Min == menitisya) {
+  if (minutes >= 60) {
+    minutes = minutes - 60;
+    hours ++;
+  }
+  
+  if (Hor == hours && Min == minutes) {
     dmd.clearScreen();
     dmd.selectFont(SystemFont5x7);
     dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
