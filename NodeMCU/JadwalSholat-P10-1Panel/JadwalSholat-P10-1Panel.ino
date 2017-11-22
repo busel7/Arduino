@@ -151,7 +151,6 @@ long transisi = 0;
 void loop() {
 
   AlarmSholat(); // Banyak dipanggil class AlarmSholat() ini agar waktu sholat lebih akurat
-
   TampilJam();
   
 
@@ -163,10 +162,13 @@ void loop() {
   if(millis()-transisi > 18000) { // Tampilkan Suhu pada detik ke 13
     AlarmSholat();
     WebTeks();
+    
     AlarmSholat();
     TampilSuhu();
+    
     AlarmSholat();
     TampilJadwalSholat();
+    
     transisi = millis();
   }
 
@@ -186,7 +188,7 @@ void JadwalSholat() {
 
   int dst=7; // TimeZone
 
-  byte value_iqmh = 1;
+  byte value_iqmh = 7;
   
   set_calc_method(Karachi);
   set_asr_method(Shafii);
@@ -302,7 +304,7 @@ void AlarmSholat() {
     dmd.drawString(6, 7, "SUBUH"); //koordinat tampilan
     Buzzer();
     Serial.println("SUBUH");
-    delay(120000);//150000delay untuk adzan
+    delay(180000);//180 detik atau 3 menit untuk adzan
     
     Buzzer();
     value_iqmh = value_iqmh + 2;    //Saat Subuh tambah 2 menit waktu Iqomah 
@@ -326,7 +328,7 @@ void AlarmSholat() {
     dmd.drawString(4, 7, "DZUHUR"); //koordinat tampilan
     Buzzer();
     Serial.println("DZUHUR");
-    delay(120000);
+    delay(180000);//180 detik atau 3 menit untuk adzan
     
     Buzzer();    
     Iqomah();
@@ -349,7 +351,7 @@ void AlarmSholat() {
     dmd.drawString(6, 7, "ASHAR"); //koordinat tampilan
     Buzzer();
     Serial.println("ASHAR");
-    delay(120000);
+    delay(180000);//180 detik atau 3 menit untuk adzan
     
     Buzzer();
     Iqomah();
@@ -372,7 +374,7 @@ void AlarmSholat() {
     dmd.drawString(1, 7, "MAGHRIB"); //koordinat tampilan
     Buzzer();
     Serial.println("MAGHRIB");
-    delay(120000);
+    delay(180000);//180 detik atau 3 menit untuk adzan
     
     Buzzer();
     Iqomah();
@@ -395,7 +397,7 @@ void AlarmSholat() {
     dmd.drawString(8, 7, "ISYA'"); //koordinat tampilan
     Buzzer();
     Serial.println("ISYA");
-    delay(120000);
+    delay(180000);//180 detik atau 3 menit untuk adzan
     
     Buzzer();
     Iqomah();
