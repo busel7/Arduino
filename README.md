@@ -43,7 +43,7 @@ Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3241 
 | -      | GND         |
 
         
-## Catatan : 
+### Catatan : 
 - Perlu Power Eksternal 5V ke LED P10.
 - Saat Flashing (upload program) cabut sementara pin untuk buzzer.
 
