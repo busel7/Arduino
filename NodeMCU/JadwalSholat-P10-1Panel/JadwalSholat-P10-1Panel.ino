@@ -19,6 +19,12 @@ Catatan :
 o Perlu Power Eksternal 5V ke LED P10.
 o Saat Flashing (upload program) cabut sementara pin untuk buzzer.
 
+Eksternal Library
+
+- DMD2 : https://github.com/freetronics/DMD2
+- PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
+- RTC DS3231 : https://github.com/SodaqMoja/Sodaq_DS3231
+
 email : bonny@grobak.net - www.grobak.net
 */
 
@@ -31,9 +37,7 @@ email : bonny@grobak.net - www.grobak.net
 #include <Sodaq_DS3231.h>
 
 #include <DMD2.h>
-//#include <fonts/Arial14.h>
 #include <fonts/Arial_Black_16.h>
-//#include <fonts/Droid_Sans_12.h>
 #include <fonts/SystemFont5x7.h>
 #include <fonts/angka6x13.h>
 #include <fonts/angka_2.h>
@@ -43,17 +47,20 @@ email : bonny@grobak.net - www.grobak.net
 
 // Inisiasi Jadwal Sholat
 double times[sizeof(TimeName)/sizeof(char*)];
-int ihti = 2;   // Koreksi Waktu Menit Jadwal Sholat
 
-byte value_iqmh=1, value_ihti=2, value_hari;
+byte value_iqmh=7; // Durasi waktu iqomah
+byte value_ihti=2; // Koreksi Waktu Menit Jadwal Sholat
+byte value_hari;
 //byte S_IQMH = 0, S_IHTI = 0, S_HARI = 0;
+int durasiadzan = 180000; // Durasi Adzan 1 detik = 1000 ms, 180000 berarti 180 detik atau 3 menit
+
 
 // BUZZER
 const int buzzer = 3; // Pin GPIO Buzzer - RX
 
 //SETUP RTC
 //year, month, date, hour, min, sec and week-day(Senin 0 sampai Ahad 6)
-//DateTime dt(2017, 11, 21, 15, 52, 0, 1);
+//DateTime dt(2017, 11, 25, 17, 34, 0, 5);
 char weekDay[][7] = {"SENIN ", "SELASA", " RABU ", "KAMIS ", "JUM'AT", "SABTU ", " AHAD ", "SENIN "}; // array hari, dihitung mulai dari senin, hari senin angka nya =0,
 char monthYear[][4] = { " ", "JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES" };
 
@@ -66,14 +73,16 @@ IPAddress local_IP(192,168,7,77);
 IPAddress gateway(192,168,7,250);
 IPAddress subnet(255,255,255,0);
 
-const char *ssid = "NodeMCU";
-const char *pass = "1234efgh";
+const char* ssid = "NodeMCU";
+const char* pass = "1234efgh"; // Password bisa dikosongkan jika diinginkan
 String value;
 WiFiServer server(80);
 
 
 // setup rutinitas yang hanya dilakukan satu kali saat tekan reset:
 void setup() {
+  delay(1000);
+  
   Serial.begin(115200);
 
   //RTC D3231
@@ -92,18 +101,25 @@ void setup() {
   Buzzer();
 
   //WIFI AP
-  Serial.print("Setting soft-AP configuration ... ");
-  Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Ready" : "Failed!");
+  Serial.println();
+  Serial.println();
+  Serial.print("Konfigurasi WiFi access point ... ");
+  Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Berhasil" : "Gagal!");
 
   Serial.print("Setting soft-AP ... ");
-  Serial.println(WiFi.softAP(ssid,pass) ? "Ready" : "Failed!");
+  Serial.println(WiFi.softAP(ssid,pass) ? "Berhasil" : "Gagal!");
+  Serial.println("");
+  Serial.print("WiFi SSID : ");
+  Serial.println(ssid);
+  Serial.print("WiFi Password : ");
+  Serial.println(pass);
+  Serial.print("WiFi IP address = ");
+  Serial.println(WiFi.softAPIP());
+  Serial.println("");
 
-  // Start the server
+  // Start the web server
   server.begin();
   Serial.println("Server started");
-
-  Serial.print("Soft-AP IP address = ");
-  Serial.println(WiFi.softAPIP());
 
   // INTRO BRANDING
   
@@ -141,33 +157,29 @@ void setup() {
 }
 
 
-
-
-
 long transisi = 0;
-
 
 // loop rutinitas yang dijalankan berulang selamanya:
 void loop() {
 
   AlarmSholat(); // Banyak dipanggil class AlarmSholat() ini agar waktu sholat lebih akurat
   TampilJam();
-  
 
-  if(millis()-transisi > 15000) { // Tampilkan Tanggal pada detik ke 10
+  if(millis()-transisi > 15000) { // Tampilkan Tanggal pada detik ke 15
     AlarmSholat();
     TampilTanggal();
   }
   
-  if(millis()-transisi > 18000) { // Tampilkan Suhu pada detik ke 13
-    AlarmSholat();
-    WebTeks();
-    
+  if(millis()-transisi > 18000) { // Tampilkan Suhu pada detik ke 18
+
     AlarmSholat();
     TampilSuhu();
     
     AlarmSholat();
     TampilJadwalSholat();
+
+    AlarmSholat();
+    WebTeks();
     
     transisi = millis();
   }
@@ -187,8 +199,6 @@ void JadwalSholat() {
   int tanggal = now.date();
 
   int dst=7; // TimeZone
-
-  byte value_iqmh = 7;
   
   set_calc_method(Karachi);
   set_asr_method(Shafii);
@@ -218,7 +228,7 @@ void TampilJadwalSholat() {
     get_float_time_parts(times[i], hours, minutes);
     if (i==0 || i==2 || i==3 || i==5 || i==6) { //Tampilkan hanya Subuh, Dzuhur, Ashar, Maghrib, Isya
       sprintf(sholat,"%s",TimeName[i]); 
-      sprintf(jam,"%02d:%02d",hours,minutes+ihti);     
+      sprintf(jam,"%02d:%02d", hours, minutes + value_ihti);     
       dmd.clearScreen();
       dmd.selectFont(Font3x5);
       dmd.drawString(6,-2,sholat);
@@ -234,7 +244,7 @@ void TampilJadwalSholat() {
   //Tambahan Waktu Tanbih (Peringatan 10 menit sebelum mulai puasa) yang biasa disebut Imsak
   
   get_float_time_parts(times[0], hours, minutes);
-  minutes = minutes + ihti;
+  minutes = minutes + value_ihti;
   if (minutes < 11) {
     minutes = 60 - minutes;
     hours --;
@@ -258,6 +268,7 @@ void AlarmSholat() {
 
   DateTime now = rtc.now();
 
+  int Hari = now.dayOfWeek();
   int Hor = now.hour();
   int Min = now.minute();
   int Sec = now.second();
@@ -268,7 +279,7 @@ void AlarmSholat() {
 
   // Tanbih atau Imsak
   get_float_time_parts(times[0], hours, minutes);
-  minutes = minutes+ihti;
+  minutes = minutes + value_ihti;
 
   if (minutes < 11) {
     minutes = 60 - minutes;
@@ -289,7 +300,7 @@ void AlarmSholat() {
 
   // Subuh
   get_float_time_parts(times[0], hours, minutes);
-  minutes = minutes+ihti;
+  minutes = minutes + value_ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -304,7 +315,7 @@ void AlarmSholat() {
     dmd.drawString(6, 7, "SUBUH"); //koordinat tampilan
     Buzzer();
     Serial.println("SUBUH");
-    delay(180000);//180 detik atau 3 menit untuk adzan
+    delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
     Buzzer();
     value_iqmh = value_iqmh + 2;    //Saat Subuh tambah 2 menit waktu Iqomah 
@@ -313,14 +324,15 @@ void AlarmSholat() {
 
   // Dzuhur
   get_float_time_parts(times[2], hours, minutes);
-  minutes = minutes+ihti;
+  minutes = minutes + value_ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
     hours ++;
   }
   
-  if (Hor == hours && Min == minutes) {
+  if (Hor == hours && Min == minutes && Hari != 4) {
+    
     dmd.clearScreen();
     dmd.selectFont(SystemFont5x7);
     dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
@@ -328,15 +340,29 @@ void AlarmSholat() {
     dmd.drawString(4, 7, "DZUHUR"); //koordinat tampilan
     Buzzer();
     Serial.println("DZUHUR");
-    delay(180000);//180 detik atau 3 menit untuk adzan
+    delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
     Buzzer();    
     Iqomah();
+    
+  } else if (Hor == hours && Min == minutes && Hari == 4) { 
+    
+    dmd.clearScreen();
+    dmd.selectFont(SystemFont5x7);
+    dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
+    dmd.selectFont(Font3x5);
+    dmd.drawString(4, 7, "JUM'AT"); //koordinat tampilan
+    Buzzer();
+    Serial.println("Adzan Jum'at");
+    delay(durasiadzan);//180 detik atau 3 menit untuk adzan
+    Buzzer();
+    
+    PesanTeks();
   }
 
   // Ashar
   get_float_time_parts(times[3], hours, minutes);
-  minutes = minutes+ihti;
+  minutes = minutes + value_ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -351,7 +377,7 @@ void AlarmSholat() {
     dmd.drawString(6, 7, "ASHAR"); //koordinat tampilan
     Buzzer();
     Serial.println("ASHAR");
-    delay(180000);//180 detik atau 3 menit untuk adzan
+    delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
     Buzzer();
     Iqomah();
@@ -359,7 +385,7 @@ void AlarmSholat() {
 
   // Maghrib
   get_float_time_parts(times[5], hours, minutes);
-  minutes = minutes+ihti;
+  minutes = minutes + value_ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -374,7 +400,7 @@ void AlarmSholat() {
     dmd.drawString(1, 7, "MAGHRIB"); //koordinat tampilan
     Buzzer();
     Serial.println("MAGHRIB");
-    delay(180000);//180 detik atau 3 menit untuk adzan
+    delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
     Buzzer();
     Iqomah();
@@ -382,7 +408,7 @@ void AlarmSholat() {
 
   // Isya'
   get_float_time_parts(times[6], hours, minutes);
-  minutes = minutes+ihti;
+  minutes = minutes + value_ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -397,7 +423,7 @@ void AlarmSholat() {
     dmd.drawString(8, 7, "ISYA'"); //koordinat tampilan
     Buzzer();
     Serial.println("ISYA");
-    delay(180000);//180 detik atau 3 menit untuk adzan
+    delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
     Buzzer();
     Iqomah();
@@ -442,7 +468,7 @@ void Iqomah() {
       dmd.drawString(2, -2, "LURUS 8"); //koordinat tampilan
       dmd.drawString(0, 7, "RAPATKAN"); //koordinat tampilan
       delay(10000);
-      for (tampil = 0; tampil < 300 ; tampil++) { //<300s nilai tunda sholt
+      for (tampil = 0; tampil < 300 ; tampil++) { // 300 detik atau 5 menit nilai tunda sholt
         menit = 0;
         detik = 0;
         dmd.clearScreen();
@@ -558,6 +584,10 @@ void Buzzer() {
   delay(1000);
   digitalWrite(buzzer, LOW);
   delay(50);
+  digitalWrite(buzzer, HIGH);
+  delay(1000);
+  digitalWrite(buzzer, LOW);
+  delay(50);
 }
 
 //----------------------------------------------------------------------
@@ -592,7 +622,7 @@ void WebTeks() {
   
     client.print(s);
     delay(1);
-    Serial.println("Client disconnected");
+    //Serial.println("Client disconnected");
  
   }
 
@@ -610,6 +640,29 @@ void WebTeks() {
     box.print(*next);
     delay(200);
     next++;
+  }
+}
+
+
+void PesanTeks() {
+
+  for (int i=0;i<5;i++){
+  dmd.clearScreen();
+  dmd.selectFont(Font3x5);
+  dmd.drawString(4, -2, "JUM'AT"); //koordinat tampilan
+  DMD_TextBox box(dmd, 0, 8);
+  String spasi = "          ";
+  String pesan = "PERIKSA KEMBALI HP ANDA DAN PASTIKAN SUDAH DI MATIKAN DEMI KEKHUSUAN DALAM BERIBADAH" + spasi;
+  String tampil = spasi + pesan + spasi; 
+  const char *MESSAGE = tampil.c_str();
+  const char *next = MESSAGE;
+  while(*next) {
+    Serial.print(*next);
+    box.print(*next);
+    delay(200);
+    next++;
+  }
+      
   }
 }
 
