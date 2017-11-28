@@ -48,11 +48,20 @@ email : bonny@grobak.net - www.grobak.net
 // Inisiasi Jadwal Sholat
 double times[sizeof(TimeName)/sizeof(char*)];
 
-byte value_iqmh=7; // Durasi waktu iqomah
+// Durasi waktu iqomah
+byte value_iqmh; 
+byte iqomahsubuh = 10;    // Durasi Iqomah dalam detik
+byte iqomahdzuhur = 10;   // Durasi Iqomah dalam detik
+byte iqomahashar = 7;     // Durasi Iqomah dalam detik
+byte iqomahmaghrib = 5;   // Durasi Iqomah dalam detik
+byte iqomahisya = 7;      // Durasi Iqomah dalam detik
+
+int durasiadzan = 180000; // Durasi Adzan 1 detik = 1000 ms, 180000 berarti 180 detik atau 3 menit
+
 byte value_ihti=2; // Koreksi Waktu Menit Jadwal Sholat
 byte value_hari;
 //byte S_IQMH = 0, S_IHTI = 0, S_HARI = 0;
-int durasiadzan = 180000; // Durasi Adzan 1 detik = 1000 ms, 180000 berarti 180 detik atau 3 menit
+
 
 
 // BUZZER
@@ -98,7 +107,7 @@ void setup() {
   digitalWrite(buzzer, LOW);
   delay(50);
 
-  Buzzer();
+  BuzzerPendek();
 
   //WIFI AP
   Serial.println();
@@ -260,7 +269,7 @@ void TampilJadwalSholat() {
   Serial.print("TANBIH");
   Serial.println(" : ");
   Serial.println(jam);
-  delay(2000);
+  delay(1000);
   
 }
 
@@ -293,7 +302,7 @@ void AlarmSholat() {
     dmd.selectFont(Font3x5);
     dmd.drawString(4, -2, "TANBIH"); //koordinat tampilan
     dmd.drawString(6, 7, "IMSAK"); //koordinat tampilan
-    Buzzer();
+    BuzzerPanjang();
     Serial.println("TANBIH");
     delay(10000);
   }
@@ -313,12 +322,12 @@ void AlarmSholat() {
     dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
     dmd.selectFont(Font3x5);
     dmd.drawString(6, 7, "SUBUH"); //koordinat tampilan
-    Buzzer();
+    BuzzerPanjang();
     Serial.println("SUBUH");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    Buzzer();
-    value_iqmh = value_iqmh + 2;    //Saat Subuh tambah 2 menit waktu Iqomah 
+    BuzzerPanjang();
+    value_iqmh = iqomahsubuh;    //Saat Subuh tambah 2 menit waktu Iqomah 
     Iqomah();
   }
 
@@ -338,11 +347,12 @@ void AlarmSholat() {
     dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
     dmd.selectFont(Font3x5);
     dmd.drawString(4, 7, "DZUHUR"); //koordinat tampilan
-    Buzzer();
+    BuzzerPanjang();
     Serial.println("DZUHUR");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    Buzzer();    
+    BuzzerPanjang();
+    value_iqmh = iqomahdzuhur;
     Iqomah();
     
   } else if (Hor == hours && Min == minutes && Hari == 4) { 
@@ -352,10 +362,10 @@ void AlarmSholat() {
     dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
     dmd.selectFont(Font3x5);
     dmd.drawString(4, 7, "JUM'AT"); //koordinat tampilan
-    Buzzer();
+    BuzzerPanjang();
     Serial.println("Adzan Jum'at");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
-    Buzzer();
+    BuzzerPanjang();
     
     PesanTeks();
   }
@@ -375,11 +385,12 @@ void AlarmSholat() {
     dmd.drawString(1, 0, "ADZAN "); //koordinat tampilan
     dmd.selectFont(Font3x5);
     dmd.drawString(6, 7, "ASHAR"); //koordinat tampilan
-    Buzzer();
+    BuzzerPanjang();
     Serial.println("ASHAR");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    Buzzer();
+    BuzzerPanjang();
+    value_iqmh = iqomahashar;
     Iqomah();
   }
 
@@ -398,11 +409,12 @@ void AlarmSholat() {
     dmd.drawString(1, 0, "ADZAN "); //koordinat tampilan
     dmd.selectFont(Font3x5);
     dmd.drawString(1, 7, "MAGHRIB"); //koordinat tampilan
-    Buzzer();
+    BuzzerPanjang();
     Serial.println("MAGHRIB");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    Buzzer();
+    BuzzerPanjang();
+    value_iqmh = iqomahmaghrib;
     Iqomah();
   }
 
@@ -421,11 +433,12 @@ void AlarmSholat() {
     dmd.drawString(1, 0, "ADZAN"); //koordinat tampilan
     dmd.selectFont(Font3x5);
     dmd.drawString(8, 7, "ISYA'"); //koordinat tampilan
-    Buzzer();
+    BuzzerPanjang();
     Serial.println("ISYA");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    Buzzer();
+    BuzzerPanjang();
+    value_iqmh = iqomahisya;  
     Iqomah();
   }
   
@@ -484,6 +497,8 @@ void Iqomah() {
       }
     }
   }
+
+  value_iqmh = 0;   // Kembalikan waktu iqomah ke 0
 }
 
 
@@ -579,13 +594,24 @@ void TampilSuhu(){
 //----------------------------------------------------------------------
 // BUNYIKAN BEEP BUZZER
 
-void Buzzer() {
+void BuzzerPanjang() {
+  digitalWrite(buzzer, HIGH);
+  delay(1000);
+  digitalWrite(buzzer, LOW);
+  delay(1000);
   digitalWrite(buzzer, HIGH);
   delay(1000);
   digitalWrite(buzzer, LOW);
   delay(50);
+}
+
+void BuzzerPendek() {
   digitalWrite(buzzer, HIGH);
-  delay(1000);
+  delay(200);
+  digitalWrite(buzzer, LOW);
+  delay(100);
+  digitalWrite(buzzer, HIGH);
+  delay(200);
   digitalWrite(buzzer, LOW);
   delay(50);
 }
@@ -665,7 +691,6 @@ void PesanTeks() {
       
   }
 }
-
 
 
 //----------------------------------------------------------------------
