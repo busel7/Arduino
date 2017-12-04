@@ -6,13 +6,13 @@
 
 Pin on  DMD P10     GPIO      NODEMCU               Pin on  DS3231      NODEMCU                   Pin on  Buzzer       NODEMCU
 
-        A           GPIO16    D0                            SCL         D1 (GPIO 5)                       +            RX (GPIO 3)
-        B           GPIO12    D6                            SDA         D2 (GPIO 4)                       -            GND
-        CLK         GPIO14    D5                            VCC         3V
-        SCK         GPIO0     D3                            GND         GND
-        R           GPIO13    D7
-        NOE         GPIO15    D8
-        GND         GND       GND
+        2  A        GPIO16    D0                            SCL         D1 (GPIO 5)                       +            RX (GPIO 3)
+        4  B        GPIO12    D6                            SDA         D2 (GPIO 4)                       -            GND
+        8  CLK      GPIO14    D5                            VCC         3V
+        10 SCK      GPIO0     D3                            GND         GND
+        12 R        GPIO13    D7
+        1  NOE      GPIO15    D8
+        3  GND      GND       GND
 
 Catatan : 
 
@@ -235,9 +235,17 @@ void TampilJadwalSholat() {
   for (int i=0;i<7;i++){
 
     get_float_time_parts(times[i], hours, minutes);
+    
+    minutes = minutes + value_ihti;
+    
+    if (minutes >= 60) {
+      minutes = minutes - 60;
+      hours ++;
+    }
+    
     if (i==0 || i==2 || i==3 || i==5 || i==6) { //Tampilkan hanya Subuh, Dzuhur, Ashar, Maghrib, Isya
       sprintf(sholat,"%s",TimeName[i]); 
-      sprintf(jam,"%02d:%02d", hours, minutes + value_ihti);     
+      sprintf(jam,"%02d:%02d", hours, minutes);     
       dmd.clearScreen();
       dmd.selectFont(Font3x5);
       dmd.drawString(6,-2,sholat);
@@ -302,9 +310,9 @@ void AlarmSholat() {
     dmd.selectFont(Font3x5);
     dmd.drawString(4, -2, "TANBIH"); //koordinat tampilan
     dmd.drawString(6, 7, "IMSAK"); //koordinat tampilan
-    BuzzerPanjang();
+    BuzzerPendek();
     Serial.println("TANBIH");
-    delay(10000);
+    delay(60000);
   }
 
   // Subuh
@@ -326,7 +334,7 @@ void AlarmSholat() {
     Serial.println("SUBUH");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    BuzzerPanjang();
+    BuzzerPendek();
     value_iqmh = iqomahsubuh;    //Saat Subuh tambah 2 menit waktu Iqomah 
     Iqomah();
   }
@@ -351,7 +359,7 @@ void AlarmSholat() {
     Serial.println("DZUHUR");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    BuzzerPanjang();
+    BuzzerPendek();
     value_iqmh = iqomahdzuhur;
     Iqomah();
     
@@ -389,7 +397,7 @@ void AlarmSholat() {
     Serial.println("ASHAR");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    BuzzerPanjang();
+    BuzzerPendek();
     value_iqmh = iqomahashar;
     Iqomah();
   }
@@ -413,7 +421,7 @@ void AlarmSholat() {
     Serial.println("MAGHRIB");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    BuzzerPanjang();
+    BuzzerPendek();
     value_iqmh = iqomahmaghrib;
     Iqomah();
   }
@@ -437,7 +445,7 @@ void AlarmSholat() {
     Serial.println("ISYA");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
     
-    BuzzerPanjang();
+    BuzzerPendek();
     value_iqmh = iqomahisya;  
     Iqomah();
   }
@@ -691,6 +699,7 @@ void PesanTeks() {
       
   }
 }
+
 
 
 //----------------------------------------------------------------------
