@@ -4,15 +4,15 @@
  *          DAN HITUNG MUNDUR IQOMAH DAN UPDATE SCROLL TEKS MALALUI WIFI.
  * 
 
-Pin on  DMD P10     GPIO      Arduino Nano          Pin on  DS3231      Arduino Nano      Pin on  Buzzer       Arduino Nano 
+Pin on  DMD P10         Arduino Nano          Pin on  DS3231      Arduino Nano      Pin on  Buzzer       Arduino Nano 
 
-        2  A        GPIO16    D6                            SCL         A5                        +            D2 (GPIO 2)
-        4  B        GPIO12    D7                            SDA         A4                        -            GND
-        8  CLK      GPIO14    D13                           VCC         3V
-        10 SCK      GPIO0     D8                            GND         GND
-        12 R-Data   GPIO13    D11
-        1  NOE      GPIO15    D9
-        3  GND      GND       GND
+        2  A            D6                            SCL         A5                        +            D2 (GPIO 2)
+        4  B            D7                            SDA         A4                        -            GND
+        8  CLK          D13                           VCC         3V
+        10 SCK          D8                            GND         GND
+        12 R-Data       D11
+        1  NOE          D9
+        3  GND          GND
 
 
 Pin Button
