@@ -16,24 +16,24 @@ Jadwal Waktu Sholat menggunakan Arduino Nano, LED Panel P10, RTC DS3231 dan BUZZ
 
 ### Pin on DMD LED P10 Panel
 
-| DMD P10 | GPIO   | Nano  | 
-| ------- | ------ | ----- |
-| A       | GPIO16 | D6    |                                                 
-| B       | GPIO12 | D7    |                                                  
-| CLK     | GPIO14 | D13   |                           
-| SCK     | GPIO0  | D8    |                           
-| R       | GPIO13 | D11   |
-| NOE     | GPIO15 | D9    |
-| GND     | GND    | GND   |
+| DMD P10 | Nano  | 
+| ------- | ----- |
+| A       | D6    |                                                 
+| B       | D7    |                                                  
+| CLK     | D13   |                           
+| SCK     | D8    |                           
+| R       | D11   |
+| NOE     | D9    |
+| GND     | GND   |
 
 ### Pin on RTC DS3231
 
 | DS3231 | Nano |
-| ------ | ------- |
-| SCL    | A5 |
-| SDA    | A4 |
-| VCC    | 3V          |
-| GND    | GND         |
+| ------ | ---- |
+| SCL    | A5   |
+| SDA    | A4   |
+| VCC    | 3V   |
+| GND    | GND  |
 
 ### Pin on Buzzer
 
