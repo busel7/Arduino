@@ -4,15 +4,15 @@
  *          DAN HITUNG MUNDUR IQOMAH DAN UPDATE SCROLL TEKS MALALUI WIFI.
  * 
 
-Pin on  DMD P10         Arduino Nano          Pin on  DS3231      Arduino Nano      Pin on  Buzzer       Arduino Nano 
+Pin on  DMD P10     GPIO      Arduino Nano          Pin on  DS3231      Arduino Nano      Pin on  Buzzer       Arduino Nano 
 
-        2  A            D6                            SCL         A5                        +            D2 (GPIO 2)
-        4  B            D7                            SDA         A4                        -            GND
-        8  CLK          D13                           VCC         3V
-        10 SCK          D8                            GND         GND
-        12 R-Data       D11
-        1  NOE          D9
-        3  GND          GND
+        2  A        GPIO16    D6                            SCL         A5                        +            D2 (GPIO 2)
+        4  B        GPIO12    D7                            SDA         A4                        -            GND
+        8  CLK      GPIO14    D13                           VCC         3V
+        10 SCK      GPIO0     D8                            GND         GND
+        12 R-Data   GPIO13    D11
+        1  NOE      GPIO15    D9
+        3  GND      GND       GND
 
 
 Pin Button
@@ -39,13 +39,15 @@ email : bonny@grobak.net - www.grobak.net
 #include <Font3x5.h>
 #include <SPI.h>
 #include <EEPROM.h>
-char weekDay[][7] = {"SENIN ", "SELASA", " RABU ", "KAMIS ", "JUM'AT", "SABTU ", " AHAD ", "SENIN "}; // array hari, dihitung mulai dari senin, hari senin angka nya =0,
+
+char weekDay[][7] = {" AHAD ","SENIN ","SELASA"," RABU ","KAMIS ","JUM'AT","SABTU"}; // array hari, dihitung mulai dari Ahad, hari Ahad angka nya =0.
+char namaBulan[][13] = {" ","JAN","FEB","MAR","APR","MEI","JUN","JUL","AGU","SEP","OKT","NOV","DES"}; // Urutan nama bulan dihitung dari 0 sampai 12
 int langkah;
 int lama_tampilnya;
 boolean Waduh_Setting = false;
 //
 int address = 0;
-byte value_iqmh=10, value_ihti=2, value_hari;
+byte value_ihti=2, value_iqmh_subuh=10, value_iqmh_dzuhur=8, value_iqmh_ashar=7, value_iqmh_maghrib=7, value_iqmh_isya=7, value_hari, m_iqmh;
 int addr = 0;
 byte S_IQMH = 0, S_IHTI = 0, S_HARI = 0;
 
@@ -79,18 +81,13 @@ void setup()
   Timer1.initialize( 500 );
   Timer1.attachInterrupt( ScanDMD );
   dmd.clearScreen( true );
-  //
-  EEPROM.write(0, value_iqmh);
-  EEPROM.write(1, value_ihti);
+
   pinMode(tombol_bOK, INPUT_PULLUP);                                 // Mode Pin Sebagai Input dengan Pull Up Internal
   pinMode(Jam_bUP, INPUT_PULLUP);                                    // Mode Pin Sebagai Input dengan Pull Up Internal
   pinMode(Jam_bDN, INPUT_PULLUP);                                    // Mode Pin Sebagai Input dengan Pull Up Internal
   //
   attachInterrupt(0, Setting, FALLING);
-  digitalWrite(buzzer, HIGH);//alarm sholat
-  delay(1000);
-  digitalWrite(buzzer, LOW);//alarm sholat
-  delay(50);
+  BuzzerPendek();
 }
 ////////////////////////////////// Fungsi Looping/Pengulangan ///////////////////////////////////////
 void loop() {
@@ -166,9 +163,9 @@ setThn:                                                           // Setting thn
     while (digitalRead(Jam_bDN) == LOW && kasus == 3) {}                         // Kunci Tombol Setting thn Sampai Lepas Tombol
   }
   // =======setting Hari======
-  //hitungan hari mulai dari 0,1,2,3,4,5,6 = senin, selasa, rabu, kamis, jumat, sabtu, minggu
+  //hitungan hari mulai dari 0,1,2,3,4,5,6 = ahad, senin, selasa, rabu, kamis, jumat, sabtu
 setHari:                                                           // Setting Times hari
-  value_hari = EEPROM.read(2);//
+  value_hari = EEPROM.read(6);//
   if (digitalRead(Jam_bUP) == LOW && kasus == 4) {                               // Tombol Setting hari
     //harin_e = harin_e;
     harin_e = value_hari;
@@ -179,7 +176,7 @@ setHari:                                                           // Setting Ti
       harin_e = 0; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
     }
     while (digitalRead(Jam_bUP) == LOW && kasus == 4) {
-      EEPROM.write(2, harin_e); // Kunci Tombol Setting hariSampai Lepas Tombol
+      EEPROM.write(6, harin_e); // Kunci Tombol Setting hariSampai Lepas Tombol
     }
   }
   if (digitalRead(Jam_bDN) == LOW && kasus == 4) {                               // Tombol Setting hari
@@ -192,54 +189,146 @@ setHari:                                                           // Setting Ti
       harin_e = 6; // Batas Nilai kurang dari 0 Kembali ke 0
     }
     while (digitalRead(Jam_bDN) == LOW && kasus == 4) {
-      EEPROM.write(2, harin_e); // Kunci Tombol Setting hariSampai Lepas Tombol
+      EEPROM.write(6, harin_e); // Kunci Tombol Setting hariSampai Lepas Tombol
     }
   }
   //====================================================>Set Iqomah<=================================================
-setIQMH:
-  value_iqmh = EEPROM.read(0);//value_sbh
+setIQMHSubuh:
+  value_iqmh_subuh = EEPROM.read(1);//value_sbh
   if (digitalRead(Jam_bUP) == LOW && kasus == 5) {                               // Tombol Setting hari
-    S_IQMH = value_iqmh;//value_sbh;
+    S_IQMH = value_iqmh_subuh;//value_sbh;
     delay(50);
     S_IQMH++;                                        // Delay Tombol & Tambah Nilai hari,
     if (S_IQMH >= 60) {
       S_IQMH = 0; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
     }
-    EEPROM.write(0, S_IQMH);
+    EEPROM.write(1, S_IQMH);
     while (digitalRead(Jam_bUP) == LOW && kasus == 5) {}                         // Kunci Tombol Setting hariSampai Lepas Tombol
   }
   if (digitalRead(Jam_bDN) == LOW && kasus == 5) {                               // Tombol Setting hari
-    S_IQMH = value_iqmh;//value_sbh;
+    S_IQMH = value_iqmh_subuh;//value_sbh;
     delay(50);
     S_IQMH--;                                        // Delay Tombol & Tambah Nilai hari,
     if (S_IQMH <= 0) {
       S_IQMH = 59; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
     }
-    EEPROM.write(0, S_IQMH);
+    EEPROM.write(1, S_IQMH);
     while (digitalRead(Jam_bDN) == LOW && kasus == 5) {}                         // Kunci Tombol Setting hari Sampai Lepas Tombol
+  }
+
+setIQMHDzuhur:
+  value_iqmh_dzuhur = EEPROM.read(2);//value_sbh
+  if (digitalRead(Jam_bUP) == LOW && kasus == 6) {                               // Tombol Setting hari
+    S_IQMH = value_iqmh_dzuhur;//value_sbh;
+    delay(50);
+    S_IQMH++;                                        // Delay Tombol & Tambah Nilai hari,
+    if (S_IQMH >= 60) {
+      S_IQMH = 0; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
+    }
+    EEPROM.write(2, S_IQMH);
+    while (digitalRead(Jam_bUP) == LOW && kasus == 6) {}                         // Kunci Tombol Setting hariSampai Lepas Tombol
+  }
+  if (digitalRead(Jam_bDN) == LOW && kasus == 6) {                               // Tombol Setting hari
+    S_IQMH = value_iqmh_dzuhur;//value_sbh;
+    delay(50);
+    S_IQMH--;                                        // Delay Tombol & Tambah Nilai hari,
+    if (S_IQMH <= 0) {
+      S_IQMH = 59; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
+    }
+    EEPROM.write(2, S_IQMH);
+    while (digitalRead(Jam_bDN) == LOW && kasus == 6) {}                         // Kunci Tombol Setting hari Sampai Lepas Tombol
+  }
+
+setIQMHAshar:
+  value_iqmh_ashar = EEPROM.read(3);//value_sbh
+  if (digitalRead(Jam_bUP) == LOW && kasus == 7) {                               // Tombol Setting hari
+    S_IQMH = value_iqmh_ashar;//value_sbh;
+    delay(50);
+    S_IQMH++;                                        // Delay Tombol & Tambah Nilai hari,
+    if (S_IQMH >= 60) {
+      S_IQMH = 0; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
+    }
+    EEPROM.write(3, S_IQMH);
+    while (digitalRead(Jam_bUP) == LOW && kasus == 7) {}                         // Kunci Tombol Setting hariSampai Lepas Tombol
+  }
+  if (digitalRead(Jam_bDN) == LOW && kasus == 7) {                               // Tombol Setting hari
+    S_IQMH = value_iqmh_ashar;//value_sbh;
+    delay(50);
+    S_IQMH--;                                        // Delay Tombol & Tambah Nilai hari,
+    if (S_IQMH <= 0) {
+      S_IQMH = 59; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
+    }
+    EEPROM.write(3, S_IQMH);
+    while (digitalRead(Jam_bDN) == LOW && kasus == 7) {}                         // Kunci Tombol Setting hari Sampai Lepas Tombol
+  }
+
+setIQMHMaghrib:
+  value_iqmh_maghrib = EEPROM.read(4);//value_sbh
+  if (digitalRead(Jam_bUP) == LOW && kasus == 8) {                               // Tombol Setting hari
+    S_IQMH = value_iqmh_maghrib;//value_sbh;
+    delay(50);
+    S_IQMH++;                                        // Delay Tombol & Tambah Nilai hari,
+    if (S_IQMH >= 60) {
+      S_IQMH = 0; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
+    }
+    EEPROM.write(4, S_IQMH);
+    while (digitalRead(Jam_bUP) == LOW && kasus == 8) {}                         // Kunci Tombol Setting hariSampai Lepas Tombol
+  }
+  if (digitalRead(Jam_bDN) == LOW && kasus == 8) {                               // Tombol Setting hari
+    S_IQMH = value_iqmh_maghrib;//value_sbh;
+    delay(50);
+    S_IQMH--;                                        // Delay Tombol & Tambah Nilai hari,
+    if (S_IQMH <= 0) {
+      S_IQMH = 59; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
+    }
+    EEPROM.write(4, S_IQMH);
+    while (digitalRead(Jam_bDN) == LOW && kasus == 8) {}                         // Kunci Tombol Setting hari Sampai Lepas Tombol
+  }
+
+setIQMHIsya:
+  value_iqmh_isya = EEPROM.read(5);//value_sbh
+  if (digitalRead(Jam_bUP) == LOW && kasus == 9) {                               // Tombol Setting hari
+    S_IQMH = value_iqmh_isya;//value_sbh;
+    delay(50);
+    S_IQMH++;                                        // Delay Tombol & Tambah Nilai hari,
+    if (S_IQMH >= 60) {
+      S_IQMH = 0; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
+    }
+    EEPROM.write(5, S_IQMH);
+    while (digitalRead(Jam_bUP) == LOW && kasus == 9) {}                         // Kunci Tombol Setting hariSampai Lepas Tombol
+  }
+  if (digitalRead(Jam_bDN) == LOW && kasus == 9) {                               // Tombol Setting hari
+    S_IQMH = value_iqmh_isya;//value_sbh;
+    delay(50);
+    S_IQMH--;                                        // Delay Tombol & Tambah Nilai hari,
+    if (S_IQMH <= 0) {
+      S_IQMH = 59; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
+    }
+    EEPROM.write(5, S_IQMH);
+    while (digitalRead(Jam_bDN) == LOW && kasus == 9) {}                         // Kunci Tombol Setting hari Sampai Lepas Tombol
   }
   //
 setIHTI:
-  value_ihti = EEPROM.read(1);//value_sbh
-  if (digitalRead(Jam_bUP) == LOW && kasus == 6) {                               // Tombol Setting hari
+  value_ihti = EEPROM.read(0);//value_sbh
+  if (digitalRead(Jam_bUP) == LOW && kasus == 10) {                               // Tombol Setting hari
     S_IHTI = value_ihti;//value_sbh;
     delay(50);
     S_IHTI++;                                        // Delay Tombol & Tambah Nilai hari,
     if (S_IHTI >= 60) {
       S_IHTI = 0; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
     }
-    EEPROM.write(1, S_IHTI);
-    while (digitalRead(Jam_bUP) == LOW && kasus == 6) {}                         // Kunci Tombol Setting hariSampai Lepas Tombol
+    EEPROM.write(0, S_IHTI);
+    while (digitalRead(Jam_bUP) == LOW && kasus == 10) {}                         // Kunci Tombol Setting hariSampai Lepas Tombol
   }
-  if (digitalRead(Jam_bDN) == LOW && kasus == 6) {                               // Tombol Setting hari
+  if (digitalRead(Jam_bDN) == LOW && kasus == 10) {                               // Tombol Setting hari
     S_IHTI = value_ihti;//value_sbh;
     delay(50);
     S_IHTI--;                                        // Delay Tombol & Tambah Nilai hari,
     if (S_IHTI <= 0) {
       S_IHTI = 59; // Batas Nilai Menit Lebih dari 6 Kembali ke 0
     }
-    EEPROM.write(1, S_IHTI);
-    while (digitalRead(Jam_bDN) == LOW && kasus == 6) {}                         // Kunci Tombol Setting hari Sampai Lepas Tombol
+    EEPROM.write(0, S_IHTI);
+    while (digitalRead(Jam_bDN) == LOW && kasus == 10) {}                         // Kunci Tombol Setting hari Sampai Lepas Tombol
   }
   //
   ///============Tombol OKE =======================
@@ -255,35 +344,38 @@ setIHTI:
     //  ============================================kasus-kasus===================
   } if (kasus == 1) {     //kasus seting jam
     dmd.clearScreen(true);
-    dmd.selectFont(SystemFont5x7);
-    dmd.drawString(0, 0, "set-J", 5, 0);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "SET JAM", 7, 0);
     String xjam = Konversi(jame) + ":" + Konversi(menit_e) ;
     int pjg = xjam.length() + 1;
     char sjam[pjg];
     xjam.toCharArray(sjam, pjg);
+    dmd.selectFont(SystemFont5x7);
     dmd.drawString(0, 9, sjam, pjg, 0);
     delay (100);
     goto setTimes; //lari ke fungsi seting jam
   }
   if (kasus == 2) {  //kasus seting tanggal
     dmd.clearScreen(true);
-    dmd.selectFont(SystemFont5x7);
-    dmd.drawString(0, 0, "Tgl", 3, 0);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "TANGGAL", 7, 0);
     String xjam = Konversi(tgl) + "/" + Konversi(bln) ;
     int pjg = xjam.length() + 1;
     char sjam[pjg];
     xjam.toCharArray(sjam, pjg);
+    dmd.selectFont(SystemFont5x7);
     dmd.drawString(0, 9, sjam, pjg, 0);
     delay (100);
     goto setTgl;//lari ke fungsi setting tanggal
   } if (kasus == 3) {  ///kasus seting tahun
     dmd.clearScreen(true);
-    dmd.selectFont(SystemFont5x7);
-    dmd.drawString(0, 0, "Thn", 3, 0);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "TAHUN", 5, 0);
     String xjam = Konversi(thn)  ;
     int pjg = xjam.length() + 1;
     char sjam[pjg];
     xjam.toCharArray(sjam, pjg);
+    dmd.selectFont(SystemFont5x7);
     dmd.drawString(0, 9, sjam, pjg, 0);
     delay (100);
     goto setThn; //lari ke fungsi setting tahun
@@ -291,60 +383,67 @@ setIHTI:
   }
 
   if (kasus == 4) { //kasus seting hari
-    value_hari = EEPROM.read(2);//
+    value_hari = EEPROM.read(6);//
     harin_e = value_hari;
     dmd.clearScreen(true);
-    dmd.selectFont(SystemFont5x7);
-    dmd.drawString(0, 0, "Hari", 4, 0);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "HARI", 4, 0);
     String xjam = Konversi(harin_e)  ;
     if (harin_e == 0) {
-      xjam = "SEN";
+      xjam = "AHD";
       int pjg = xjam.length() + 1;
       char sjam[pjg];
       xjam.toCharArray(sjam, pjg);
+      dmd.selectFont(SystemFont5x7);
       dmd.drawString(0, 9, sjam, pjg, 0);
     }  if (harin_e == 1) {
+      xjam = "SEN";
+
+      int pjg = xjam.length() + 1;
+      char sjam[pjg];
+      xjam.toCharArray(sjam, pjg);
+      dmd.selectFont(SystemFont5x7);
+      dmd.drawString(0, 9, sjam, pjg, 0);
+    }
+    if (harin_e == 2) {
       xjam = "SEL";
 
       int pjg = xjam.length() + 1;
       char sjam[pjg];
       xjam.toCharArray(sjam, pjg);
+      dmd.selectFont(SystemFont5x7);
       dmd.drawString(0, 9, sjam, pjg, 0);
-    }
-    if (harin_e == 2) {
+    } if (harin_e == 3) {
       xjam = "RAB";
 
       int pjg = xjam.length() + 1;
       char sjam[pjg];
       xjam.toCharArray(sjam, pjg);
+      dmd.selectFont(SystemFont5x7);
       dmd.drawString(0, 9, sjam, pjg, 0);
-    } if (harin_e == 3) {
+    } if (harin_e == 4) {
       xjam = "KAM";
 
       int pjg = xjam.length() + 1;
       char sjam[pjg];
       xjam.toCharArray(sjam, pjg);
+      dmd.selectFont(SystemFont5x7);
       dmd.drawString(0, 9, sjam, pjg, 0);
-    } if (harin_e == 4) {
+    } if (harin_e == 5) {
       xjam = "JUM";
 
       int pjg = xjam.length() + 1;
       char sjam[pjg];
       xjam.toCharArray(sjam, pjg);
+      dmd.selectFont(SystemFont5x7);
       dmd.drawString(0, 9, sjam, pjg, 0);
-    } if (harin_e == 5) {
+    } if (harin_e == 6) {
       xjam = "SAB";
 
       int pjg = xjam.length() + 1;
       char sjam[pjg];
       xjam.toCharArray(sjam, pjg);
-      dmd.drawString(0, 9, sjam, pjg, 0);
-    } if (harin_e == 6) {
-      xjam = "AHD";
-
-      int pjg = xjam.length() + 1;
-      char sjam[pjg];
-      xjam.toCharArray(sjam, pjg);
+      dmd.selectFont(SystemFont5x7);
       dmd.drawString(0, 9, sjam, pjg, 0);
     }
     delay (100);
@@ -355,23 +454,90 @@ setIHTI:
   if (kasus == 5) {  ///kasus seting tahun
 
     dmd.clearScreen(true);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "IQM-SBH", 7, 0); //(kolom,baris,"text",jmltext,batas ahir)    
     dmd.selectFont(SystemFont5x7);
-    dmd.drawString(0, 0, "S-IQM", 5, 0); //(kolom,baris,"text",jmltext,batas ahir)
     dmd.drawString(0, 9, "  ", 2, 0);//S:
     dmd.drawString(24, 9, "M", 1, 0);
-    String xjam = Konversi(value_iqmh);//(value_sbh)  ;
+    String xjam = Konversi(value_iqmh_subuh);//(value_sbh)  ;
     int pjg = xjam.length() + 1;
     char sjam[pjg];
     xjam.toCharArray(sjam, pjg);
     dmd.drawString(11, 9, sjam, pjg, 0);
     delay (100);
-    goto setIQMH; //lari ke fungsi setting tahun
+    goto setIQMHSubuh; //lari ke fungsi setting iqomah subuh
   }
+
   if (kasus == 6) {  ///kasus seting tahun
 
     dmd.clearScreen(true);
     dmd.selectFont(Font3x5);
-    dmd.drawString(0, -2, "IHTIYATI", 8, 0); //(kolom,baris,"text",jmltext,batas ahir)
+    dmd.drawString(1, -2, "IQM-DZH", 7, 0); //(kolom,baris,"text",jmltext,batas ahir)
+    dmd.selectFont(SystemFont5x7);
+    dmd.drawString(0, 9, "  ", 2, 0);//S:
+    dmd.drawString(24, 9, "M", 1, 0);
+    String xjam = Konversi(value_iqmh_dzuhur);//(value_sbh)  ;
+    int pjg = xjam.length() + 1;
+    char sjam[pjg];
+    xjam.toCharArray(sjam, pjg);
+    dmd.drawString(11, 9, sjam, pjg, 0);
+    delay (100);
+    goto setIQMHDzuhur; //lari ke fungsi setting tahun
+  }
+  if (kasus == 7) {  ///kasus seting tahun
+
+    dmd.clearScreen(true);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "IQM-ASH", 7, 0); //(kolom,baris,"text",jmltext,batas ahir)
+    dmd.selectFont(SystemFont5x7);
+    dmd.drawString(0, 9, "  ", 2, 0);//S:
+    dmd.drawString(24, 9, "M", 1, 0);
+    String xjam = Konversi(value_iqmh_ashar);//(value_sbh)  ;
+    int pjg = xjam.length() + 1;
+    char sjam[pjg];
+    xjam.toCharArray(sjam, pjg);
+    dmd.drawString(11, 9, sjam, pjg, 0);
+    delay (100);
+    goto setIQMHAshar; //lari ke fungsi setting tahun
+  }
+  if (kasus == 8) {  ///kasus seting tahun
+
+    dmd.clearScreen(true);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "IQM-MAG", 7, 0); //(kolom,baris,"text",jmltext,batas ahir)
+    dmd.selectFont(SystemFont5x7);
+    dmd.drawString(0, 9, "  ", 2, 0);//S:
+    dmd.drawString(24, 9, "M", 1, 0);
+    String xjam = Konversi(value_iqmh_maghrib);//(value_sbh)  ;
+    int pjg = xjam.length() + 1;
+    char sjam[pjg];
+    xjam.toCharArray(sjam, pjg);
+    dmd.drawString(11, 9, sjam, pjg, 0);
+    delay (100);
+    goto setIQMHMaghrib; //lari ke fungsi setting tahun
+  }
+  if (kasus == 9) {  ///kasus seting tahun
+
+    dmd.clearScreen(true);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "IQM-ISY", 7, 0); //(kolom,baris,"text",jmltext,batas ahir)
+    dmd.selectFont(SystemFont5x7);
+    dmd.drawString(0, 9, "  ", 2, 0);//S:
+    dmd.drawString(24, 9, "M", 1, 0);
+    String xjam = Konversi(value_iqmh_isya);//(value_sbh)  ;
+    int pjg = xjam.length() + 1;
+    char sjam[pjg];
+    xjam.toCharArray(sjam, pjg);
+    dmd.drawString(11, 9, sjam, pjg, 0);
+    delay (100);
+    goto setIQMHIsya; //lari ke fungsi setting tahun
+  }
+  
+  if (kasus == 10) {  ///kasus seting tahun
+
+    dmd.clearScreen(true);
+    dmd.selectFont(Font3x5);
+    dmd.drawString(1, -2, "IHTIYATI", 8, 0); //(kolom,baris,"text",jmltext,batas ahir)
     dmd.selectFont(SystemFont5x7);
     dmd.drawString(0, 9, "  ", 3, 0);//S:
     dmd.drawString(24, 9, "M", 1, 0);//24
@@ -383,7 +549,7 @@ setIHTI:
     delay (100);
     goto setIHTI; //lari ke fungsi setting tahun
   }
-  if (kasus == 7) {       //kasus wis Rampung
+  if (kasus == 11) {       //kasus wis Rampung
     dmd.clearScreen(true);
     goto endSetting;
     delay(500);
@@ -407,16 +573,17 @@ void mulai()
   TampilJam();
   AlarmSholat();
 
+  TampilTanggal();
+  AlarmSholat();
+  TampilSuhu();
+  AlarmSholat();
+
   TampilJadwalSholat();
   AlarmSholat();
   
   RunningText();
   AlarmSholat();
 
-  TampilTanggal();
-  AlarmSholat();
-  TampilSuhu();
-  AlarmSholat();
 
 }
 
@@ -526,9 +693,9 @@ void RunningText() {
   char detikanku[dowo];
   hariku.toCharArray(detikanku, dowo);
   dmd.drawString(2, 0, detikanku, dowo, 0);
-  Teks = "MASJID AL KAUTSAR" ; ///tampilkan teks
+  Teks = "GROBAK.NET" ; ///tampilkan teks
   int kecepatan;
-  kecepatan = 45;     //kecepatan runing teks
+  kecepatan = 35;     //kecepatan runing teks
   int pj = Teks.length() + 1;
   char tampil[pj];
   Teks.toCharArray(tampil, pj);
@@ -593,7 +760,7 @@ void TampilJadwalSholat() {
 
     get_float_time_parts(times[i], hours, minutes);
 
-    value_ihti = EEPROM.read(1);
+    value_ihti = EEPROM.read(0);
     minutes = minutes + value_ihti;
     
     if (minutes >= 60) {
@@ -713,7 +880,7 @@ void AlarmSholat() {
     delay(180000);//180 detik atau 3 menit untuk adzan
     
     BuzzerPendek();
-    value_iqmh = EEPROM.read(0) + 2;    //Saat Subuh tambah 2 menit waktu Iqomah 
+    m_iqmh = EEPROM.read(1);    //Saat Subuh tambah 2 menit waktu Iqomah 
     Iqomah();
   }
 
@@ -726,7 +893,7 @@ void AlarmSholat() {
     hours ++;
   }
   
-  if (Hor == hours && Min == minutes && Hari != 4) {
+  if (Hor == hours && Min == minutes && Hari != 5) {
     
     dmd.clearScreen(true);
     dmd.selectFont(SystemFont5x7);
@@ -738,10 +905,10 @@ void AlarmSholat() {
     delay(180000);//180 detik atau 3 menit untuk adzan
     
     BuzzerPendek();
-    value_iqmh = EEPROM.read(0) - 0;
+    m_iqmh = EEPROM.read(2);
     Iqomah();
     
-  } else if (Hor == hours && Min == minutes && Hari == 4) { 
+  } else if (Hor == hours && Min == minutes && Hari == 5) { 
     
     dmd.clearScreen(true);
     dmd.selectFont(SystemFont5x7);
@@ -773,7 +940,7 @@ void AlarmSholat() {
     delay(180000);//180 detik atau 3 menit untuk adzan
     
     BuzzerPendek();
-    value_iqmh = EEPROM.read(0) - 5;
+    m_iqmh = EEPROM.read(3);
     Iqomah();
   }
 
@@ -797,7 +964,7 @@ void AlarmSholat() {
     delay(180000);//180 detik atau 3 menit untuk adzan
     
     BuzzerPendek();
-    value_iqmh = EEPROM.read(0) - 5;
+    m_iqmh = EEPROM.read(4);
     Iqomah();
   }
 
@@ -821,7 +988,7 @@ void AlarmSholat() {
     delay(180000);//180 detik atau 3 menit untuk adzan
     
     BuzzerPendek();
-    value_iqmh = EEPROM.read(0) - 5;  
+    m_iqmh = EEPROM.read(5);  
     Iqomah();
   }
   
@@ -844,7 +1011,7 @@ void Iqomah() {
   //dmd.clearScreen( true );
   dmd.drawString(3, -2, "IQOMAH", 6, 0); //koordinat tampilan
   int tampil;
-  int detik = 0, menit = value_iqmh;
+  int detik = 0, menit = m_iqmh;
   for (detik = 0; detik >= 0; detik--) {
     delay(1000);
     String iqomah = Konversi(menit) + ":" + Konversi(detik);
@@ -893,9 +1060,8 @@ void Iqomah() {
 
 void TampilTanggal() {
   
-    DateTime now = rtc.now();
+    DateTime now = rtc.now();    
     
-    char namaBulan[][13] = {"","JAN","FEB","MAR","APR","MEI","JUN","JUL","AGU","SEP","OKT","NOV","DES"}; // Urutan nama bulan dihitung dari 0 sampai 12
     char tanggalan[5];
     
     sprintf(tanggalan,"%02d %s", now.date(), namaBulan[now.month()]);
@@ -962,4 +1128,3 @@ String Konversi(int sInput) {
     return String(sInput);
   }
 }
-
