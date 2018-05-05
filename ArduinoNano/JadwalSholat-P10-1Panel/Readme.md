@@ -11,8 +11,8 @@ Jadwal Waktu Sholat menggunakan Arduino Nano, LED Panel P10, RTC DS3231 dan BUZZ
 - Alarm Adzan Waktu Solat dan Tanbih Imsak
 - Tanggal
 - Suhu
-- Hitung Mundur Iqomah
-- Jam Kecil pada baris atas dan Update scroll teks malului Wifi pada baris bawah
+- Hitung Mundur Iqomah dan dapat diset perwaktu sholat
+- Jam Kecil pada baris atas dan Update scroll teks
 
 ### Pin on DMD LED P10 Panel
 
