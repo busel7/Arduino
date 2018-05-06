@@ -16,31 +16,31 @@ Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3231 
 
 ### Pin on DMD LED P10 Panel
 
-| DMD P10 | GPIO | NODEMCU | 
-| ------- | ---- | ------- |
-| A       | GPIO16 | D0    |                                                 
-| B       | GPIO12 | D6    |                                                  
-| CLK     | GPIO14 | D5    |                           
-| SCK     | GPIO0  | D3    |                           
-| R       | GPIO13 | D7    |
-| NOE     | GPIO15 | D8    |
-| GND     | GND    | GND   |
+| DMD P10 | NODEMCU | 
+| ------- | ------- |
+| A       | D0      |                                                 
+| B       | D6      |
+| CLK     | D5      |
+| SCK     | D3      |                            
+| R       | D7      |
+| NOE     | D8      |
+| GND     | GND     |
 
 ### Pin on RTC DS3231
 
 | DS3231 | NODEMCU |
 | ------ | ------- |
-| SCL    | D1 (GPIO 5) |
-| SDA    | D2 (GPIO 4) |
-| VCC    | 3V          |
-| GND    | GND         |
+| SCL    | D1      |
+| SDA    | D2      |
+| VCC    | 3V      |
+| GND    | GND     |
 
 ### Pin on Buzzer
 
 | Buzzer | NODEMCU |
 | ------ | ------- |
-| +      | RX (GPIO 3) |
-| -      | GND         |
+| +      | RX      |
+| -      | GND     |
 
 ### Eksternal Library
 - DMD2 : https://github.com/freetronics/DMD2
