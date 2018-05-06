@@ -40,7 +40,7 @@ email : bonny@grobak.net - www.grobak.net
 #include <SPI.h>
 #include <EEPROM.h>
 
-char weekDay[][7] = {" AHAD ","SENIN ","SELASA"," RABU ","KAMIS ","JUM'AT","SABTU"}; // array hari, dihitung mulai dari Ahad, hari Ahad angka nya =0.
+char weekDay[][7] = {" AHAD ","SENIN ","SELASA"," RABU ","KAMIS ","JUM'AT","SABTU"," AHAD "}; // array hari, dihitung mulai dari Ahad, hari Ahad angka nya =0.
 char namaBulan[][13] = {" ","JAN","FEB","MAR","APR","MEI","JUN","JUL","AGU","SEP","OKT","NOV","DES"}; // Urutan nama bulan dihitung dari 0 sampai 12
 int langkah;
 int lama_tampilnya;
