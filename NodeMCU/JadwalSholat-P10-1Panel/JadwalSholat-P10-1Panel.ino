@@ -28,13 +28,29 @@ Eksternal Library
 email : bonny@grobak.net - www.grobak.net
 */
 
+
+
+/* Just a little test message.  Go to http://192.168.4.1 in a web browser
+   connected to this access point to see it.
+*/
+
+
 #include <ESP8266WiFi.h>
-#include "espneotext.h"
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+//#include "espneotext.h"
 #include <SPI.h>
 #include <EEPROM.h>
 
 #include <Wire.h>
 #include <Sodaq_DS3231.h>
+
+
+
+#ifndef APSSID
+#define APSSID "JWSGrobakNet"
+#define APPSK  "grobaknet"
+#endif
 
 #include <DMD2.h>
 #include <fonts/Arial_Black_16.h>
@@ -50,11 +66,13 @@ double times[sizeof(TimeName)/sizeof(char*)];
 
 // Durasi waktu iqomah
 byte value_iqmh; 
-byte iqomahsubuh = 10;    // Durasi Iqomah dalam detik
+byte iqomahsubuh = 10;     // Durasi Iqomah dalam detik
 byte iqomahdzuhur = 10;   // Durasi Iqomah dalam detik
 byte iqomahashar = 7;     // Durasi Iqomah dalam detik
 byte iqomahmaghrib = 5;   // Durasi Iqomah dalam detik
 byte iqomahisya = 7;      // Durasi Iqomah dalam detik
+
+int durasijamsholat = 300;  // Durasi Jam Sholat setelah Iqomah dalam detik
 
 int durasiadzan = 180000; // Durasi Adzan 1 detik = 1000 ms, 180000 berarti 180 detik atau 3 menit
 
@@ -69,7 +87,7 @@ const int buzzer = 3; // Pin GPIO Buzzer - RX
 
 //SETUP RTC
 //year, month, date, hour, min, sec and week-day(Senin 0 sampai Ahad 6)
-//DateTime dt(2017, 11, 25, 17, 34, 0, 5);
+//DateTime dt(2018, 12, 20, 16, 30, 0, 3);
 char weekDay[][7] = {"SENIN ", "SELASA", " RABU ", "KAMIS ", "JUM'AT", "SABTU ", " AHAD ", "SENIN "}; // array hari, dihitung mulai dari senin, hari senin angka nya =0,
 char monthYear[][4] = { " ", "JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES" };
 
@@ -78,22 +96,45 @@ SPIDMD dmd(1,1);  // Jumlah Panel P10 yang digunakan (KOLOM,BARIS)
 DMD_TextBox box(dmd);  // "box" provides a text box to automatically write to/scroll the display
 
 //SETUP WIFI AP
-IPAddress local_IP(192,168,7,77);
-IPAddress gateway(192,168,7,250);
-IPAddress subnet(255,255,255,0);
+/* Set these to your desired credentials. */
+const char *ssid = APSSID;
+const char *password = APPSK;
 
-const char* ssid = "NodeMCU";
-const char* pass = "1234efgh"; // Password bisa dikosongkan jika diinginkan
+ESP8266WebServer server(80);
+
+
 String value;
-WiFiServer server(80);
+
+void handleRoot() {
+  server.send(200, "text/html", "<h1>Kamu sudah tersambung</h1>");
+}
 
 
 // setup rutinitas yang hanya dilakukan satu kali saat tekan reset:
 void setup() {
-  delay(1000);
-  
-  Serial.begin(115200);
 
+  delay(1000);
+  Serial.begin(115200);
+  Serial.println();
+  
+  
+//  Serial.print("Configuring access point...");
+
+  /* You can remove the password parameter if you want the AP to be open. */
+  WiFi.softAP(ssid, password);
+
+  IPAddress myIP = WiFi.softAPIP();
+
+  //IPAddress local_IP(192,168,7,77);
+  //IPAddress gateway(192,168,7,250);
+  //IPAddress subnet(255,255,255,0);
+  
+  Serial.print("AP IP address: ");
+  Serial.println(myIP);
+  server.on("/", handleRoot);
+  server.begin();
+  Serial.println("HTTP server started");
+  
   //RTC D3231
   Wire.begin();
   rtc.begin();
@@ -109,26 +150,7 @@ void setup() {
 
   BuzzerPendek();
 
-  //WIFI AP
-  Serial.println();
-  Serial.println();
-  Serial.print("Konfigurasi WiFi access point ... ");
-  Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Berhasil" : "Gagal!");
 
-  Serial.print("Setting soft-AP ... ");
-  Serial.println(WiFi.softAP(ssid,pass) ? "Berhasil" : "Gagal!");
-  Serial.println("");
-  Serial.print("WiFi SSID : ");
-  Serial.println(ssid);
-  Serial.print("WiFi Password : ");
-  Serial.println(pass);
-  Serial.print("WiFi IP address = ");
-  Serial.println(WiFi.softAPIP());
-  Serial.println("");
-
-  // Start the web server
-  server.begin();
-  Serial.println("Server started");
 
   // INTRO BRANDING
   
@@ -136,33 +158,18 @@ void setup() {
   dmd.selectFont(Font3x5); 
   dmd.drawString(4,-1, "GROBAK");
   dmd.drawString(2,7, ".NET");
-  delay(3000);
+  delay(1000);
 
   dmd.clearScreen();
   dmd.selectFont(Arial_Black_16); 
   dmd.drawString(-2,1, "JWS");
-  delay(2000);
+  delay(1000);
 
   dmd.clearScreen();
   dmd.selectFont(Font3x5); 
   dmd.drawString(7,3, "VER.1");
-  delay(2000);
-
-  dmd.clearScreen();
-  dmd.selectFont(Font3x5); 
-  dmd.drawString(1,-2, "ALMT IP");
-  DMD_TextBox box(dmd, 0, 7);
-  String ip = WiFi.softAPIP().toString();
-  const char *alamatip = ip.c_str();
-  const char *lanjut = alamatip;
-  while(*lanjut) {
-    Serial.print(*lanjut);
-    box.print(*lanjut);
-    delay(250);
-    lanjut++;
-  }
-  delay(2000);
-
+  delay(1000);
+  
 }
 
 
@@ -170,25 +177,30 @@ long transisi = 0;
 
 // loop rutinitas yang dijalankan berulang selamanya:
 void loop() {
+  
+  //server.handleClient();
+
+
 
   AlarmSholat(); // Banyak dipanggil class AlarmSholat() ini agar waktu sholat lebih akurat
+  delay(1);
   TampilJam();
-
+  delay(1);
   if(millis()-transisi > 15000) { // Tampilkan Tanggal pada detik ke 15
     AlarmSholat();
     TampilTanggal();
+    delay(1);
   }
   
   if(millis()-transisi > 18000) { // Tampilkan Suhu pada detik ke 18
 
     AlarmSholat();
     TampilSuhu();
+    delay(1);
     
     AlarmSholat();
     TampilJadwalSholat();
-
-    AlarmSholat();
-    WebTeks();
+    delay(1);
     
     transisi = millis();
   }
@@ -200,6 +212,7 @@ void loop() {
 //JADWAL SHOLAT
 
 void JadwalSholat() {
+  delay(1);
 
   DateTime now = rtc.now();
 
@@ -224,9 +237,9 @@ void JadwalSholat() {
 }
 
 void TampilJadwalSholat() {
-
+  delay(1);
   JadwalSholat();
-
+  
   char sholat[7];
   char jam[5];
   char TimeName[][6] = {"SUBUH","TRBIT","DZUHR","ASHAR","TRBNM","MGHRB","ISYA'"};
@@ -244,7 +257,8 @@ void TampilJadwalSholat() {
     }
     
     if (i==0 || i==2 || i==3 || i==5 || i==6) { //Tampilkan hanya Subuh, Dzuhur, Ashar, Maghrib, Isya
-      sprintf(sholat,"%s",TimeName[i]); 
+      //sprintf(sholat,"%s",TimeName[i]);
+      String sholat = TimeName[i];
       sprintf(jam,"%02d:%02d", hours, minutes);     
       dmd.clearScreen();
       dmd.selectFont(Font3x5);
@@ -282,6 +296,7 @@ void TampilJadwalSholat() {
 }
 
 void AlarmSholat() {
+  delay(1);
 
   DateTime now = rtc.now();
 
@@ -373,6 +388,7 @@ void AlarmSholat() {
     BuzzerPanjang();
     Serial.println("Adzan Jum'at");
     delay(durasiadzan);//180 detik atau 3 menit untuk adzan
+    
     BuzzerPanjang();
     
     PesanTeks();
@@ -459,6 +475,7 @@ void AlarmSholat() {
 void Iqomah() {
 
   JadwalSholat();
+  delay(1);
 
   DateTime now = rtc.now();
   //iqomah----------------------------------
@@ -468,12 +485,13 @@ void Iqomah() {
   //dmd.clearScreen( true );
   dmd.drawString(3, -2, "IQOMAH"); //koordinat tampilan
   int tampil;
+  char iqomah[7];
   //value_iqmh = EEPROM.read(0);
 
   int detik = 0, menit = value_iqmh;
   for (detik = 0; detik >= 0; detik--) {
     delay(1000);
-    String iqomah = Konversi(menit) + ":" + Konversi(detik);
+    sprintf(iqomah, "%02d : %02d", menit, detik);
     dmd.selectFont(SystemFont5x7);
     dmd.drawString(1, 9, iqomah);
     if (detik <= 0) {
@@ -489,7 +507,7 @@ void Iqomah() {
       dmd.drawString(2, -2, "LURUS 8"); //koordinat tampilan
       dmd.drawString(0, 7, "RAPATKAN"); //koordinat tampilan
       delay(10000);
-      for (tampil = 0; tampil < 300 ; tampil++) { // 300 detik atau 5 menit nilai tunda sholt
+      for (tampil = 0; tampil < durasijamsholat ; tampil++) { // 300 detik atau 5 menit nilai tunda sholt
         menit = 0;
         detik = 0;
         dmd.clearScreen();
@@ -497,7 +515,9 @@ void Iqomah() {
         dmd.drawString(4, -2, "SHOLAT"); //koordinat tampilan
         ///////////////////////
         now = rtc.now();
-        String jam = Konversi(now.hour()) + ":" + Konversi(now.minute()) + ":" + Konversi(now.second()) ; //tampilan jam
+        //String jam = Konversi(now.hour()) + ":" + Konversi(now.minute()) + ":" + Konversi(now.second()) ; //tampilan jam
+        char jam[7];
+        sprintf(jam, "%02d : %02d : %02d", now.hour(), now.minute(), now.second());
         dmd.selectFont(Font3x5);
         dmd.drawString(2, 7, jam);
         /////////////////////
@@ -514,22 +534,26 @@ void Iqomah() {
 //TAMPILKAN JAM BESAR
 
 void TampilJam() {
+  delay(1);
   DateTime now = rtc.now();
+  char jam[2];
+  char menit[2];
+  char detik[2];
 
   dmd.clearScreen(); 
 
   //JAM
-  String jam = Konversi(now.hour()) ; //tampilan jam  
+  sprintf(jam,"%02d", now.hour());
   dmd.selectFont(angka6x13);
   dmd.drawString(3, 0, jam);
 
   //MENIT
-  String menit = Konversi(now.minute()) ; //tampilan menit
+  sprintf(menit,"%02d", now.minute());
   dmd.selectFont(Font3x5);
   dmd.drawString(22, -2, menit);
 
   //DETIK
-  String detik = Konversi(now.second()) ; //tampilan menit
+  sprintf(detik,"%02d", now.second());
   dmd.selectFont(Font3x5);
   dmd.drawString(22, 6, detik);
 
@@ -546,15 +570,18 @@ void TampilJam() {
     dmd.drawFilledBox(18,8,19,10);
   }
 
-  Serial.println(jam + " : " + menit + " : " + detik);
+  //Serial.println(jam + " : " + menit + " : " + detik);
   delay(1000);
   
 }
 
 void TampilJamKecil() {
+  delay(1);
   DateTime now = rtc.now();
+  char jam[7];
   
-  String jam = Konversi(now.hour()) + ":" + Konversi(now.minute()); //tampilan jam
+  //String jam = Konversi(now.hour()) + ":" + Konversi(now.minute()); //tampilan jam
+  sprintf(jam, "%02d : %02d", now.hour(), now.minute());
   
   dmd.clearScreen();
   dmd.selectFont(angka_2);
@@ -568,16 +595,24 @@ void TampilJamKecil() {
 //TAMPILKAN TANGGAL
 
 void TampilTanggal() {
+  delay(1);
   DateTime now = rtc.now();
   
   String hari = weekDay[now.dayOfWeek()];
-  String tanggal = Konversi(now.date()) + " " + monthYear[now.month()];
+  
+  char tanggal[18];
+  sprintf(tanggal, "%02d",             //%02d allows to print an integer with leading zero 2 digit to the string, %s print sebagai string
+                  now.date()           //get day method
+  );
+
+  String bulan = monthYear[now.month()];
   
   dmd.clearScreen();
   dmd.selectFont(Font3x5);
   dmd.drawString(4,-2,hari);
   dmd.drawString(4,7,tanggal);
-  Serial.println(hari + ", " + tanggal);
+  dmd.drawString(14,7,bulan);
+  //Serial.println(hari + ", " + tanggal);
   delay(3000);
   
 }
@@ -587,14 +622,17 @@ void TampilTanggal() {
 // TAMPILKAN SUHU
 
 void TampilSuhu(){
+  delay(1);
   //Tampilkan Suhu
+  int temp = rtc.getTemperature();
+  char suhu[2];
   dmd.clearScreen();
   dmd.selectFont(Font3x5);    
   dmd.drawString(9, -2, "SUHU");
-  String suhu = Konversi(rtc.getTemperature()) + "C";
+  sprintf(suhu,"%dC",temp);
   dmd.selectFont(SystemFont5x7);
   dmd.drawString(8, 8, suhu);
-  Serial.println("SUHU : " + suhu + "C");
+  //Serial.println("SUHU : " + suhu + "C");
   delay(3000);
 }
 
@@ -603,6 +641,7 @@ void TampilSuhu(){
 // BUNYIKAN BEEP BUZZER
 
 void BuzzerPanjang() {
+  delay(1);
   digitalWrite(buzzer, HIGH);
   delay(1000);
   digitalWrite(buzzer, LOW);
@@ -614,6 +653,7 @@ void BuzzerPanjang() {
 }
 
 void BuzzerPendek() {
+  delay(1);
   digitalWrite(buzzer, HIGH);
   delay(200);
   digitalWrite(buzzer, LOW);
@@ -627,59 +667,11 @@ void BuzzerPendek() {
 //----------------------------------------------------------------------
 // TAMPILKAN SCROLLING TEKS YANG DIINPUT MELALUI WEBSITE
 
-void WebTeks() {
-  // Check if a client has connected
-  WiFiClient client = server.available();
-  
-   // Read the first line of the request
-  String command1 = client.readStringUntil('/');
-  String command = client.readStringUntil('/');
-  Serial.println(command);
-  
-  if (command == "text") {
-    value = client.readStringUntil('/');
-    value.replace("%20", " ");
-    Serial.println(value);
-  }
-  
-  else {  // Prepare the response
-    String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-    s += file1;  
-    client.flush();
-  
-    // Send the response to the client
-    while(s.length()>2000) {
-      String dummy = s.substring(0,2000);
-      client.print(dummy);
-      s.replace(dummy," ");
-    }
-  
-    client.print(s);
-    delay(1);
-    //Serial.println("Client disconnected");
- 
-  }
 
-  dmd.clearScreen();
-  TampilJamKecil();
-  dmd.selectFont(Font3x5); 
-  DMD_TextBox box(dmd, 0, 8);
-  String spasi = "          ";
-  String logo = "GROBAK.NET - WEB DESIGN - WEB DEVELOPER" + spasi;
-  String tampil = spasi + logo + value + spasi; 
-  const char *MESSAGE = tampil.c_str();
-  const char *next = MESSAGE;
-  while(*next) {
-    Serial.print(*next);
-    box.print(*next);
-    delay(200);
-    next++;
-  }
-}
 
 
 void PesanTeks() {
-
+  delay(1);
   for (int i=0;i<5;i++){
   dmd.clearScreen();
   dmd.selectFont(Font3x5);
@@ -697,21 +689,5 @@ void PesanTeks() {
     next++;
   }
       
-  }
-}
-
-
-
-//----------------------------------------------------------------------
-///Konversi angka agar ada nol didepannya jika diawah 10
-
-String Konversi(int sInput) {
-  if (sInput < 10)
-  {
-    return"0" + String(sInput);
-  }
-  else
-  {
-    return String(sInput);
   }
 }
