@@ -234,13 +234,7 @@ void TampilJadwalSholat() {
       TeksStatis(jam);
       Serial.println(jam);
       delay(2000);
-
-      ///////////////interupsi tombol menu-----------
-      //if (digitalRead(tombol_bOK) == LOW) {
-      //  MenuSetting(); // Jika Tombol OK/Interrupt ditekan maka masuk menu setting Manual
-    
-      //}
-      
+     
     }
   }
 
