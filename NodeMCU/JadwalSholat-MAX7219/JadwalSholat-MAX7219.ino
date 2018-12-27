@@ -51,7 +51,7 @@ int value_iqmh;  // Waktu Iqomah 10 menit
 
 // Set Wifi SSID dan Password
 #ifndef APSSID
-#define APSSID "JWSGrobakNet"
+#define APSSID "JWSGrobakNet1"
 #define APPSK  "grobaknet"
 #endif
 
@@ -205,9 +205,10 @@ void handleRoot() {
   message += "<head>";
   message += javaScript;
   message += "<title>JWS Grobak.Net</title>";
-  message += "<style> body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }";
+  message += "<style> body { font-family: Arial, Helvetica, Sans-Serif; color: green; }";
   message += "h1 {text-align:center;}";
-  message += "h2 {text-align:center;}";
+  message += "h5 {text-align:center;}";
+  message += "a {text-decoration:none; color:#fff; background:green; padding:10px; border-radius:15px; }";
   message += "p {text-align:center;}";
   message += "table.center { width:80%; margin-left:10%; margin-right:10%;}";
   message += "</style>";
@@ -227,19 +228,19 @@ void handleRoot() {
   
   message += "  <tr>";
   message += "    <td align='center'>";
-  message += "<A id='year'></A>/<A id='month'></A>/<A id='day'></A>   <A id='hour'></A>:<A id='minute'></A>:<A id='second'></A><BR>";
+  message += "<span id='year'></span>/<span id='month'></span>/<span id='day'></span>   <span id='hour'></span>:<span id='minute'></span>:<span id='second'></span><BR>";
   message += "    </td>";
   message += "  </tr>";
   
   message += "  <tr>";
   message += "    <td align='center'>";
-  message += "Temp =<A id='temp'></A>C<BR>";
+  message += "Temp =<span id='temp'></span>C<BR>";
   message += "    </td>";
   message += "  </tr>";
 
   message += "  <tr>";
   message += "    <td>";
-  message += "<H2><a href='/setTime'>Ubah Tanggal dan Jam</a></H2>";
+  message += "<h5><a href='/setTime'>Ubah Tanggal dan Jam</a></h5>";
   message += "    </td>";
   message += "  </tr>";
 
@@ -269,9 +270,10 @@ void setTime() {
   message += "<head>";
   message += javaScript;
   message += "<title>JWS Grobak.Net</title>";
-  message += "<style> body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }";
+  message += "<style> body { font-family: Arial, Helvetica, Sans-Serif; color: green; }";
   message += "h1 {text-align:center;}";
-  message += "h2 {text-align:center;}";
+  message += "h5 {text-align:center;}";
+  message += "a {text-decoration:none; color:#fff; background:green; padding:10px; border-radius:15px; }";
   message += "p {text-align:center;}";
   message += "table.center { width:80%; margin-left:10%; margin-right:10%;}";
   message += "</style>";
@@ -293,7 +295,7 @@ void setTime() {
   message += "  </tr>";
   message += "  <tr>";
   message += "    <td align='center'>";
-  message += "<A id='year'></A>/<A id='month'></A>/<A id='day'></A><BR>";
+  message += "<span id='year'></span>/<span id='month'></span>/<span id='day'></span><BR>";
   message += "    </td>";
   message += "  </tr>";
   message += "  <tr>";
@@ -310,7 +312,7 @@ void setTime() {
   message += "  </tr>";
   message += "  <tr>";
   message += "    <td align='center'>";
-  message += "Jam Tersimpan<BR><A id='hour'></A>:<A id='minute'></A>:<A id='second'></A><BR><BR>";
+  message += "Jam Tersimpan<BR><span id='hour'></span>:<span id='minute'></span>:<span id='second'></span><BR><BR>";
   message += "    </td>";
   message += "  </tr>";
   message += "  <tr>";
@@ -324,7 +326,7 @@ void setTime() {
   message += "  </tr>";
   message += "  <tr>";
   message += "    <td>";
-  message += "<H2><a href='/'>Kembali</a></H2>";
+  message += "<h5><a href='/'>Kembali</a></h5>";
   message += "    </td>";
   message += "  </tr>";
   message += "</table>";
@@ -390,7 +392,8 @@ void handleNotFound() {
   message += "<title>JWS Grobak.Net - Halaman tidak ditemukan</title>";
   message += "<style> body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }";
   message += "h1 {text-align:center;}";
-  message += "h2 {text-align:center;}";
+  message += "h5 {text-align:center;}";
+  message += "a {text-decoration:none; color:#fff; background:green; padding:10px; border-radius:15px; }";
   message += "</style>";
   message += "  </head>";
   message += "  <body>";
@@ -401,7 +404,7 @@ void handleNotFound() {
   message += "</th>";
   message += "<tr>";//baris 2
   message += "<td>";//kolom isi
-  message += "<H2><a href='/'>Kembali</a></H2>";
+  message += "<h5><a href='/'>Kembali</a></h5>";
   message += "<td>";
   message += "</tr>";
   message += "</table>";
