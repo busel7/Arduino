@@ -28,14 +28,17 @@ G                   -
 
 */
 
-
-#include <stdio.h>
 #include <Wire.h>
-#include "Sodaq_DS3231.h"
+#include <RtcDS3231.h>
+RtcDS3231<TwoWire> Rtc(Wire);
 #include "PrayerTimes.h"
 #include <Adafruit_GFX.h>
 #include <Max72xxPanel.h>
 #include <Fonts/Picopixel.h>
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
 
 // Ubah nama hari dan nama bulan
 char weekDay[][3] = {"AH","SN","SL","RB","KM","JM","SB","AH"};
@@ -45,6 +48,25 @@ char monthYear[][4] = { " ", "JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "A
 double times[sizeof(TimeName)/sizeof(char*)];
 int ihti = 2;   // Koreksi Waktu Menit Jadwal Sholat
 int value_iqmh;  // Waktu Iqomah 10 menit
+
+// Set Wifi SSID dan Password
+#ifndef APSSID
+#define APSSID "JWSGrobakNet"
+#define APPSK  "grobaknet"
+#endif
+
+/* Set these to your desired credentials. */
+const char *ssid = APSSID;
+const char *password = APPSK;
+
+char datestring[20];
+String message,javaScript,XML;
+    
+ESP8266WebServer server(80);
+ESP8266HTTPUpdateServer httpUpdater;
+
+RtcDateTime now;
+
 
 // Matrix Display
 long period;
@@ -60,8 +82,374 @@ int width = 5 + spacer; // Adjust the distance between the characters
 // BUZZER
 const int buzzer = 12;
 
+int updCnt = 0;
+long clkTime = 0;
+
+
+
+/* Just a little test message.  Go to http://192.168.4.1 in a web browser
+   connected to this access point to see it.
+*/
+
+
+
+//=============================================================================================
+void buildJavascript(){
+//=============================================================================================
+  javaScript="<SCRIPT>\n";
+  javaScript+="var xmlHttp=createXmlHttpObject();\n";
+
+  javaScript+="function createXmlHttpObject(){\n";
+  javaScript+=" if(window.XMLHttpRequest){\n";
+  javaScript+="    xmlHttp=new XMLHttpRequest();\n";
+  javaScript+=" }else{\n";
+  javaScript+="    xmlHttp=new ActiveXObject('Microsoft.XMLHTTP');\n";// code for IE6, IE5
+  javaScript+=" }\n";
+  javaScript+=" return xmlHttp;\n";
+  javaScript+="}\n";
+
+  javaScript+="function process(){\n";
+  javaScript+=" if(xmlHttp.readyState==0 || xmlHttp.readyState==4){\n";
+  javaScript+="   xmlHttp.open('PUT','xml',true);\n";
+  javaScript+="   xmlHttp.onreadystatechange=handleServerResponse;\n";
+  javaScript+="   xmlHttp.send(null);\n";
+  javaScript+=" }\n";
+  javaScript+=" setTimeout('process()',1000);\n";
+  javaScript+="}\n";
+ 
+  javaScript+="function handleServerResponse(){\n";
+  javaScript+=" if(xmlHttp.readyState==4 && xmlHttp.status==200){\n";
+  javaScript+="   xmlResponse=xmlHttp.responseXML;\n";
+  
+  javaScript+="   xmldoc = xmlResponse.getElementsByTagName('rYear');\n";
+  javaScript+="   message = xmldoc[0].firstChild.nodeValue;\n";
+  javaScript+="   document.getElementById('year').innerHTML=message;\n";
+  
+  javaScript+="   xmldoc = xmlResponse.getElementsByTagName('rMonth');\n";
+  javaScript+="   message = xmldoc[0].firstChild.nodeValue;\n";
+  javaScript+="   document.getElementById('month').innerHTML=message;\n";
+  
+  javaScript+="   xmldoc = xmlResponse.getElementsByTagName('rDay');\n";
+  javaScript+="   message = xmldoc[0].firstChild.nodeValue;\n";
+  javaScript+="   document.getElementById('day').innerHTML=message;\n";
+  
+  javaScript+="   xmldoc = xmlResponse.getElementsByTagName('rHour');\n";
+  javaScript+="   message = xmldoc[0].firstChild.nodeValue;\n";
+  javaScript+="   document.getElementById('hour').innerHTML=message;\n";
+  
+  javaScript+="   xmldoc = xmlResponse.getElementsByTagName('rMinute');\n";
+  javaScript+="   message = xmldoc[0].firstChild.nodeValue;\n";
+  javaScript+="   document.getElementById('minute').innerHTML=message;\n";
+  
+  javaScript+="   xmldoc = xmlResponse.getElementsByTagName('rSecond');\n";
+  javaScript+="   message = xmldoc[0].firstChild.nodeValue;\n";
+  javaScript+="   document.getElementById('second').innerHTML=message;\n";
+  
+  javaScript+="   xmldoc = xmlResponse.getElementsByTagName('rTemp');\n";
+  javaScript+="   message = xmldoc[0].firstChild.nodeValue;\n";
+  javaScript+="   document.getElementById('temp').innerHTML=message;\n";
+ 
+  javaScript+=" }\n";
+  javaScript+="}\n";
+  javaScript+="</SCRIPT>\n";
+}
+//=============================================================================================
+void buildXML(){
+//=============================================================================================
+  RtcDateTime now = Rtc.GetDateTime();
+  RtcTemperature temp = Rtc.GetTemperature();
+  XML="<?xml version='1.0'?>";
+  XML+="<t>"; 
+    XML+="<rYear>";
+    XML+=now.Year();
+    XML+="</rYear>";
+    XML+="<rMonth>";
+    XML+=now.Month();
+    XML+="</rMonth>";
+    XML+="<rDay>";
+    XML+=now.Day();
+    XML+="</rDay>";
+    XML+="<rHour>";
+      if(now.Hour()<10){
+        XML+="0";
+        XML+=now.Hour();
+      }else{    XML+=now.Hour();}
+    XML+="</rHour>";
+    XML+="<rMinute>";
+      if(now.Minute()<10){
+        XML+="0";
+        XML+=now.Minute();
+      }else{    XML+=now.Minute();}
+    XML+="</rMinute>";
+    XML+="<rSecond>";
+      if(now.Second()<10){
+        XML+="0";
+        XML+=now.Second();
+      }else{    XML+=now.Second();}
+    XML+="</rSecond>";
+    XML+="</rTemp>";
+    XML+= temp.AsFloatDegC();
+    XML+="</rTemp>";
+  XML+="</t>"; 
+}
+
+//=============================================================================================
+void handleRoot() {
+//=============================================================================================
+  buildJavascript();
+  IPAddress ip = WiFi.localIP();
+  String ipStr = (String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]));
+
+  message = "<!DOCTYPE HTML>";
+  message += "<html>";
+  message += "<head>";
+  message += javaScript;
+  message += "<title>JWS Grobak.Net</title>";
+  message += "<style> body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }";
+  message += "h1 {text-align:center;}";
+  message += "h2 {text-align:center;}";
+  message += "p {text-align:center;}";
+  message += "table.center { width:80%; margin-left:10%; margin-right:10%;}";
+  message += "</style>";
+  message += "  </head>";
+  message += "  <body onload='process()'>";
+  message += "<table class='center'>";
+  message += "  <tr>";
+  message += "    <th>";
+  message += "<h1>JWS Grobak.Net</h1>";
+  message += "    </th> ";
+  message += "  </tr>";
+  message += "  <tr>";
+  message += "    <td align='center'>";
+  message += "    </td>";
+  message += "  </tr>";
+
+  
+  message += "  <tr>";
+  message += "    <td align='center'>";
+  message += "<A id='year'></A>/<A id='month'></A>/<A id='day'></A>   <A id='hour'></A>:<A id='minute'></A>:<A id='second'></A><BR>";
+  message += "    </td>";
+  message += "  </tr>";
+  
+  message += "  <tr>";
+  message += "    <td align='center'>";
+  message += "Temp =<A id='temp'></A>C<BR>";
+  message += "    </td>";
+  message += "  </tr>";
+
+  message += "  <tr>";
+  message += "    <td>";
+  message += "<H2><a href='/setTime'>Ubah Tanggal dan Jam</a></H2>";
+  message += "    </td>";
+  message += "  </tr>";
+
+  message += "  <tr>";
+  message += "    <td align='center'>";
+  message += "<BR>IP  ";
+  message += ipStr;
+  message += "    </td>";
+  message += "  </tr>";
+  message += "</table>";
+ 
+  message += "<BR>";
+
+  message += "";
+ 
+  message += "</body></html>";
+
+  server.send ( 404 ,"text/html", message );
+}
+
+//=============================================================================================
+void setTime() {
+//=============================================================================================
+  buildJavascript();
+  message = "<!DOCTYPE HTML>";
+  message += "<html>";
+  message += "<head>";
+  message += javaScript;
+  message += "<title>JWS Grobak.Net</title>";
+  message += "<style> body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }";
+  message += "h1 {text-align:center;}";
+  message += "h2 {text-align:center;}";
+  message += "p {text-align:center;}";
+  message += "table.center { width:80%; margin-left:10%; margin-right:10%;}";
+  message += "</style>";
+  message += "  </head>";
+  message += "  <body onload='process()'>";/////////////////////////////////////////
+
+  message += "";
+  
+  message += "<table class='center'>";
+  message += "  <tr>";
+  message += "    <th>";
+  message += "<h1>Ubah Tanggal dan Jam</h1>";
+  message += "    </th> ";
+  message += "  </tr>";
+  message += "  <tr>";
+  message += "    <td align='center'>";
+  message += "Tanggal Sekarang  ";
+  message += " <BR>   </td>";
+  message += "  </tr>";
+  message += "  <tr>";
+  message += "    <td align='center'>";
+  message += "<A id='year'></A>/<A id='month'></A>/<A id='day'></A><BR>";
+  message += "    </td>";
+  message += "  </tr>";
+  message += "  <tr>";
+  message += "    <td align='center'>";
+
+  message += "<form >";
+  message += "Format tanggal 2017-03-20<br><br>";
+  message += "<input type='date' name='date' min='2017-03-20' style='height:75px; width:200px'><br><br>";
+  message += "<input type='submit' value='Ubah Tanggal' style='height:75px; width:200px'> ";
+  message += "</form>";
+  
+
+  message += "    </td>";
+  message += "  </tr>";
+  message += "  <tr>";
+  message += "    <td align='center'>";
+  message += "Jam Tersimpan<BR><A id='hour'></A>:<A id='minute'></A>:<A id='second'></A><BR><BR>";
+  message += "    </td>";
+  message += "  </tr>";
+  message += "  <tr>";
+  message += "    <td align='center'>";
+  message += "<form >";  
+  message += "Tentukan Jam<br>";
+  message += "<input type='TIME' name='time' style='height:75px; width:200px'><br><br>";
+  message += "<input type='submit' value='Ubah Jam' style='height:75px; width:200px'> ";
+  message += "</form>";
+  message += "    </td>";
+  message += "  </tr>";
+  message += "  <tr>";
+  message += "    <td>";
+  message += "<H2><a href='/'>Kembali</a></H2>";
+  message += "    </td>";
+  message += "  </tr>";
+  message += "</table>";
+
+
+  message += "";
+  
+  message += "</body></html>";
+
+  server.send ( 404 ,"text/html", message );
+  
+// Tanggal--------------------------------------------------------------------  
+  if (server.hasArg("date")) {
+    
+    uint16_t ano;
+    uint8_t mes;
+    uint8_t dia;
+    Serial.print("ARGdate");
+    Serial.println(server.arg("date"));
+    String sd=server.arg("date");
+    String lastSd;
+     ano = ((sd[0]-'0')*1000)+((sd[1]-'0')*100)+((sd[2]-'0')*10)+(sd[3]-'0');
+     mes = ((sd[5]-'0')*10)+(sd[6]-'0');
+     dia = ((sd[8]-'0')*10)+(sd[9]-'0');
+    if (sd != lastSd){
+      RtcDateTime now = Rtc.GetDateTime();
+      uint8_t hour = now.Hour();
+      uint8_t minute = now.Minute();
+      Rtc.SetDateTime(RtcDateTime(ano, mes, dia, hour, minute, 0));
+      lastSd=sd;}
+  // Serial.println(fa);
+
+   server.send ( 404 ,"text", message );
+}//if has date
+// Jam ------------------------------------------------
+  if (server.hasArg("time")) {
+    Serial.println(server.arg("time"));
+    String st=server.arg("time");
+    String lastSt;
+    uint8_t hora = ((st[0]-'0')*10)+(st[1]-'0');
+    uint8_t minuto = ((st[3]-'0')*10)+(st[4]-'0');
+    if (st != lastSt){
+       RtcDateTime now = Rtc.GetDateTime();
+       uint16_t year = now.Year();
+       uint8_t month = now.Month();
+       uint8_t day = now.Day();
+       Rtc.SetDateTime(RtcDateTime(year, month, day, hora, minuto, 0));
+       lastSt=st;}
+    server.send ( 404 ,"text", message );
+
+  }//if has time
+}
+//=============================================================================================
+void handleXML(){
+//=============================================================================================
+  buildXML();
+  server.send(200,"text/xml",XML);
+}
+//=============================================================================================
+void handleNotFound() {
+//=============================================================================================
+  String message = "<html><head>";
+  message += "<title>JWS Grobak.Net - Halaman tidak ditemukan</title>";
+  message += "<style> body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }";
+  message += "h1 {text-align:center;}";
+  message += "h2 {text-align:center;}";
+  message += "</style>";
+  message += "  </head>";
+  message += "  <body>";
+  message += "<table style='width:80%'>";
+  message += "<tr>";//baris 2
+  message += "<th>";//kolom judul
+  message += "<h1>Tidak ditemukan</h1>";
+  message += "</th>";
+  message += "<tr>";//baris 2
+  message += "<td>";//kolom isi
+  message += "<H2><a href='/'>Kembali</a></H2>";
+  message += "<td>";
+  message += "</tr>";
+  message += "</table>";
+  message += "</body></html>";
+  message += "";
+  
+  server.send ( 404 ,"text", message );
+}
+
 
 void setup() {
+  delay(1000);
+  Serial.begin(115200);
+  Serial.println();
+  Serial.print("Configuring access point...");
+  /* You can remove the password parameter if you want the AP to be open. */
+  WiFi.softAP(ssid, password);
+
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(myIP);
+  
+  server.on ( "/", handleRoot );
+  server.on ( "/setTime", setTime );
+  server.on ( "/xml", handleXML) ;
+  server.onNotFound ( handleNotFound );
+  
+  server.begin();
+  Serial.println("HTTP server started");
+
+
+  // RTC --------------------------------------------------------------------------------------
+  Rtc.Begin();
+
+  // if you are using ESP-01 then uncomment the line below to reset the pins to
+  // the available pins for SDA, SCL
+  //Wire.begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
+
+  //   RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
+  if (!Rtc.GetIsRunning()){
+  //     Serial.println("RTC was not actively running, starting now");
+       Rtc.SetIsRunning(true);}
+  //RtcDateTime now = Rtc.GetDateTime();
+  // never assume the Rtc was last configured by you, so
+  // just clear them to your needed state
+  Rtc.Enable32kHzPin(false);
+  Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
+
 
   //Matrix Display
   matrix.setIntensity(1); // Matrix brightness from 0 to 15
@@ -71,33 +459,21 @@ void setup() {
   matrix.setRotation(1, 1);        // 2 matrix
   matrix.setRotation(2, 1);        // 3 matrix
   matrix.setRotation(3, 1);        // 4 matrix
-
-  //Buzzer
-  pinMode(buzzer, OUTPUT);      // inisiasi pin untuk buzzer
-  
-  Serial.begin(115200);   //Starts serial connection
-  Wire.begin();
-  rtc.begin();
-
-  //SETTING WAKTU
-  //year, month, date, hour, min, sec and week-day(starts from 0 and goes to 6)
-  //writing any non-existent time-data may interfere with normal operation of the RTC.
-  //Take care of week-day also.
-  
-  //DateTime dt(2018, 12, 26, 17, 33, 0, 2);
-  //rtc.setDateTime(dt); //Adjust date-time as defined 'dt' above 
-
-  BuzzerPendek();
   
 }
 
-int updCnt = 0;
-long clkTime = 0;
 
 void loop() {
-
-  TampilJam();            //Tampilkan Jam
   
+  server.handleClient();
+  mulai();
+
+}
+
+void mulai() {
+  
+  TampilJam();
+
   AlarmSholat();
 
   if(millis()-clkTime > 15000) {  //Every 15 seconds, tampilkan tanggal bergerak
@@ -116,38 +492,32 @@ void loop() {
     
     clkTime = millis();
   }
-
-}
-
-void TampilTanggal(){
-
-  DateTime now = rtc.now();
-
-  char tanggal[18];
-
-  sprintf(tanggal, "%s,%02d%s",             //%02d allows to print an integer with leading zero 2 digit to the string, %s print sebagai string
-                  weekDay[now.dayOfWeek()],   //ambil method hari dalam format lengkap
-                  now.date(),                 //get day method
-                  monthYear[now.month()]     //get month method
-  );
   
-  Serial.println(tanggal);    //print the string to the serial port
+}
 
-  TeksStatis(tanggal);
-  delay(3000);
+
+//-----------------------------------------------------
+//Menampilkan Mode Setting
+
+void SetMode(){
+
+   TeksStatis("SETUP...");
 
 }
+
+//-----------------------------------------------------
+//Menampilkan Jam
 
 void TampilJam(){
 
-  DateTime now = rtc.now();
+  RtcDateTime now = Rtc.GetDateTime();
 
   char jam[8];
 
   sprintf(jam, "%02d:%02d:%02d",    //%02d print jam dengan format 2 digit
-                  now.hour(),       //get hour method
-                  now.minute(),     //get minute method
-                  now.second()      //get second method
+                  now.Hour(),       //get hour method
+                  now.Minute(),     //get minute method
+                  now.Second()      //get second method
   );
   
   Serial.println(jam);    //print the string to the serial port
@@ -158,35 +528,52 @@ void TampilJam(){
 
 }
 
+//-----------------------------------------------------
+//Menampilkan Tanggal
+
+void TampilTanggal(){
+
+  RtcDateTime now = Rtc.GetDateTime();
+
+  char tanggal[18];
+
+  sprintf(tanggal, "%s,%02d%s",             //%02d allows to print an integer with leading zero 2 digit to the string, %s print sebagai string
+                  weekDay[now.DayOfWeek()],   //ambil method hari dalam format lengkap
+                  now.Day(),                 //get day method
+                  monthYear[now.Month()]     //get month method
+  );
+  
+  Serial.println(tanggal);    //print the string to the serial port
+
+  TeksStatis(tanggal);
+  delay(3000);
+
+}
+
+//-----------------------------------------------------
+//Menampilkan Suhu
+
 void TampilSuhu() {
 
-  int temp = rtc.getTemperature();
+  RtcTemperature temp = Rtc.GetTemperature();
+  int celsius = temp.AsFloatDegC();
   char suhu[2];
-  int koreksisuhu = 3; // Perkiraan selisih suhu ruangan dan luar ruangan
+  int koreksisuhu = 2; // Perkiraan selisih suhu ruangan dan luar ruangan
   
-  sprintf(suhu, "SUHU %dC", temp - koreksisuhu);
+  sprintf(suhu, "SUHU %dC", celsius - koreksisuhu);
   
   TeksStatis(suhu);
     
 }
 
-void p(char *fmt, ... ){
-        char tmp[128]; // resulting string limited to 128 chars
-        va_list args;
-        va_start (args, fmt );
-        vsnprintf(tmp, 128, fmt, args);
-        va_end (args);
-        Serial.print(tmp);
-}
-
 
 void JadwalSholat() {
 
-  DateTime now = rtc.now();
+  RtcDateTime now = Rtc.GetDateTime();
 
-  int tahun = now.year();
-  int bulan = now.month();
-  int tanggal = now.date();
+  int tahun = now.Year();
+  int bulan = now.Month();
+  int tanggal = now.Day();
 
   int dst=7; // TimeZone
   
@@ -234,7 +621,7 @@ void TampilJadwalSholat() {
       TeksStatis(jam);
       Serial.println(jam);
       delay(2000);
-     
+      
     }
   }
 
@@ -257,12 +644,12 @@ void TampilJadwalSholat() {
 
 void AlarmSholat() {
 
-  DateTime now = rtc.now();
+  RtcDateTime now = Rtc.GetDateTime();
 
-  int Hari = now.dayOfWeek();
-  int Hor = now.hour();
-  int Min = now.minute();
-  int Sec = now.second();
+  int Hari = now.DayOfWeek();
+  int Hor = now.Hour();
+  int Min = now.Minute();
+  int Sec = now.Second();
 
   JadwalSholat();
   int hours, minutes;
@@ -402,7 +789,7 @@ void AlarmSholat() {
 
 void Iqomah() {
 
-  DateTime now = rtc.now();
+  RtcDateTime now = Rtc.GetDateTime();
   //iqomah----------------------------------
   char iqomah[8];
   int tampil;
@@ -422,8 +809,8 @@ void Iqomah() {
         menit = 0;
         detik = 0;
         ///////////////////////
-        now = rtc.now();
-        sprintf(iqomah,"SH %02d:%02d",now.hour(),now.minute());  
+        //now = rtc.now();
+        sprintf(iqomah,"SH %02d:%02d",now.Hour(),now.Minute());  
         TeksStatis(iqomah);
         /////////////////////
         delay (1000);
@@ -432,8 +819,9 @@ void Iqomah() {
   }
 }
 
+//-----------------------------------------------------
+//Membuat Format Teks Statis
 
-// =======================================================================
 void TeksStatis(String text){
 
   matrix.fillScreen(LOW);
@@ -449,14 +837,13 @@ void TeksStatis(String text){
   int x = (matrix.width() +0) -letter;
   int y = 5; // Center text on Vertical
   matrix.drawChar(x, y, text[i], HIGH, LOW, 1);
-  
-  //delay(75);
-  
-  matrix.write(); // Display
+    
+  matrix.write(); // Tampilkan
 
   }
 
 }
+
 
 // =======================================================================
 void TeksBerjalan (String text){
