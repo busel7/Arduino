@@ -34,7 +34,7 @@ RtcDS3231<TwoWire> Rtc(Wire);
 #include "PrayerTimes.h"
 #include <Adafruit_GFX.h>
 #include <Max72xxPanel.h>
-#include <Fonts/Picopixel.h>
+#include <Fonts/Font3x78pt7b.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -80,7 +80,7 @@ int spacer = 2;
 int width = 5 + spacer; // Adjust the distance between the characters
 
 // BUZZER
-const int buzzer = 12;
+uint8_t buzzer = D6;
 
 int updCnt = 0;
 long clkTime = 0;
@@ -418,6 +418,7 @@ void handleNotFound() {
 void setup() {
   delay(1000);
   Serial.begin(115200);
+  
   Serial.println();
   Serial.print("Configuring access point...");
   /* You can remove the password parameter if you want the AP to be open. */
@@ -434,7 +435,6 @@ void setup() {
   
   server.begin();
   Serial.println("HTTP server started");
-
 
   // RTC --------------------------------------------------------------------------------------
   Rtc.Begin();
@@ -462,6 +462,13 @@ void setup() {
   matrix.setRotation(1, 1);        // 2 matrix
   matrix.setRotation(2, 1);        // 3 matrix
   matrix.setRotation(3, 1);        // 4 matrix
+
+  //Buzzer
+  pinMode(buzzer, OUTPUT);      // inisiasi pin untuk buzzer
+
+  BuzzerPendek();
+
+  Branding();
   
 }
 
@@ -600,7 +607,7 @@ void TampilJadwalSholat() {
 
   char sholat[7];
   char jam[5];
-  char TimeName[][8] = {"SU","TE","DZ","AS","TE","M.","IS","WA"};
+  char TimeName[][8] = {"SU","TE","DZ","AS","TE","MG","IS","WA"};
   int hours, minutes;
 
   for (int i=0;i<8;i++){
@@ -832,13 +839,13 @@ void TeksStatis(String text){
   // Setting font untuk jam
   spacer = 2;
   width = 3 + spacer;
-  matrix.setFont(&Picopixel);
+  matrix.setFont(&Font3x78pt7b);
 
   for (int i=0; i<text.length(); i++){
   
   int letter =(matrix.width())- i * (width-1);
   int x = (matrix.width() +0) -letter;
-  int y = 5; // Center text on Vertical
+  int y = 11; // Set posisi vertikal font kadang suka terlalu atas atau terlalu bawah
   matrix.drawChar(x, y, text[i], HIGH, LOW, 1);
     
   matrix.write(); // Tampilkan
@@ -856,7 +863,6 @@ void TeksBerjalan (String text){
   spacer = 2;
   width = 5 + spacer;
   matrix.setFont(); // Reset font to default
-  
   
   for ( int i = 0 ; i < width * text.length() + matrix.width() - 1 - spacer; i++ ) {
     if (refresh==1) i=0;
@@ -901,4 +907,11 @@ void BuzzerPendek() {
   delay(200);
   digitalWrite(buzzer, LOW);
   delay(50);
+}
+
+void Branding() {
+  TeksStatis("JWS MEJA");
+  delay(2000);
+  TeksStatis("VER.1");
+  delay(2000);
 }
