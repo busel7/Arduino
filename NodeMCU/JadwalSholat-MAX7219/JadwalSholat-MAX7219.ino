@@ -6,8 +6,6 @@ Pengkabelan:
 
 NodeMCU             Matrix
 ---------------------------
-3V                  VCC
-G                   GND
 D7-GPIO13           DIN
 D5-GPIO14           CLK
 D3-GPIO0            CS(LOAD)
@@ -17,14 +15,16 @@ NodeMCU             DS3231
 --------------------------
 D1-GPIO5            SCL
 D2-GPIO4            SDA
-3V                  VCC
-G                   GND
 
+Vin & GND NodeMCU to 5V Power Supply 
+VCC & GND MAX7219 Panel to 5V Power Supply
 
 NodeMCU             Buzzer
 --------------------------
 D6-GPIO12           +
 G                   -
+
+VCC and GND DS3231 Module to 5V Power Supply
 
 */
 
