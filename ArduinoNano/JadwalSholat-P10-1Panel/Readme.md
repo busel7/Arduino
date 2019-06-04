@@ -2,7 +2,27 @@
 
 ## JWS - Jadwal Waktu Sholat
 
-Jadwal Waktu Sholat menggunakan Arduino Nano, LED Panel P10, RTC DS3231, BUZZER dan Push Button
+Jadwal Waktu Sholat menggunakan:
+
+Arduino Nano
+- https://www.tokopedia.com/elektronmartcom/nodemcu-esp8266-v3-lua-wifi-board-cp2102
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/1fl2z9z-jual-nodemcu-esp8266-v3-lua-wifi-board-cp2102
+
+LED Panel P10
+
+RTC DS3231
+- https://www.tokopedia.com/elektronmartcom/rtc-ds3231-at24c32-iic-precision-clock-module-ds3231sn-without-battery
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/1flsmxn-jual-rtc-ds3231sn-at24c32-iic-precision-clock-module-without-battery
+
+Buzzer
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/1fo3u1t-jual-piezo-active-buzzer-5v
+- https://www.tokopedia.com/elektronmartcom/piezo-active-buzzer-5v
+
+LED Panel P10
+
+Push Button
+
+
 
 ### FITUR
 
