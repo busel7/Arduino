@@ -5,8 +5,8 @@
 Jadwal Waktu Sholat menggunakan:
 
 Arduino Nano
-- https://www.tokopedia.com/elektronmartcom/nodemcu-esp8266-v3-lua-wifi-board-cp2102
-- https://www.bukalapak.com/p/elektronik/komponen-elektronik/1fl2z9z-jual-nodemcu-esp8266-v3-lua-wifi-board-cp2102
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/1fmlrqv-jual-nano-v3-mini-usb-ch340-black-compatible-arduino
+- https://tokopedia.link/GqZKub3EjX
 
 LED Panel P10
 
@@ -21,7 +21,8 @@ Buzzer
 LED Panel P10
 
 Push Button
-
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/1s1wa9a-jual-switch-tactile-push-button-6x6x10mm
+- https://tokopedia.link/InIOtraFjX
 
 
 ### FITUR
