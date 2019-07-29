@@ -1,8 +1,8 @@
 # Arduino Project Grobak.Net
 
-## JWS - Jadwal Waktu Sholat
+## LED JWS - Jam Waktu Sholat
 
-Jadwal Waktu Sholat menggunakan: 
+Jam Waktu Sholat menggunakan: 
 
 NodeMCU ESP8266
 - https://www.tokopedia.com/elektronmartcom/nodemcu-esp8266-v3-lua-wifi-board-cp2102
