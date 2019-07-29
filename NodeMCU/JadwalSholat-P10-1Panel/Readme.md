@@ -22,11 +22,11 @@ Buzzer
 
 - Jam Besar
 - Jadwal Sholat 5 Waktu dan Tanbih Imsak
-- Alarm Adzan Waktu Solat dan Tanbih Imsak
+- Alarm Adzan 5 Waktu Solat dan Tanbih Imsak
 - Tanggal
 - Suhu
 - Hitung Mundur Iqomah
-- Jam Kecil pada baris atas dan Update scroll teks malului Wifi pada baris bawah
+- Setting Waktu lewat Wifi dengan browser
 
 ### Pin on DMD LED P10 Panel
 
