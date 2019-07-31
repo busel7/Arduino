@@ -30,6 +30,8 @@ email : bonny@grobak.net - www.grobak.net
 
 
 #include <SPI.h>
+#include <FS.h>
+#include <ArduinoJson.h>
 #include <Wire.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -38,36 +40,40 @@ RtcDS3231<TwoWire> Rtc(Wire);
 
 #include <HJS589.h>
 #include <fonts/Arial_Black_16.h>
-#include <fonts/SystemFont5x7.h>
 #include <fonts/angka6x13.h>
 #include <fonts/Font3x5.h>
+#include <fonts/angkasm47.h>
+#include <fonts/Britannic.h>
+#include <fonts/arab6x13.h>
 
 #include "PrayerTimes.h"
 #include "WebPage.h"
-
-// WIFI
-const char* ssid = "JWSP10"; //kalau gagal konek 
-const char* password = "elektronmart";
-
-const char* wifissid = "grobak.net";
-const char* wifipassword ="12345";
-
-IPAddress local_ip(192, 168, 4, 1);
-IPAddress gateway(192, 168, 4, 1);
-IPAddress netmask(255, 255, 255, 0);
 
 
 // JADWAL SHOLAT
 double times[sizeof(TimeName)/sizeof(char*)];
 
 // Durasi waktu iqomah
+struct Config {
+  int iqmhs;
+  int iqmhd;
+  int iqmha;
+  int iqmhm;
+  int iqmhi;
+  int ihti; // Koreksi Waktu Menit Jadwal Sholat
+  float latitude;
+  float longitude;
+  char merek[64];
+  char info1[512];
+  char info2[512];
+};
+
 int iqmh;
-int iqmhs = 12; // Subuh
-int iqmhd = 8; // Dzuhur
-int iqmha = 6; // Ashar
-int iqmhm = 5; // Maghrib
-int iqmhi = 5; // Isya
-int ihti = 2; // Koreksi Waktu Menit Jadwal Sholat
+
+struct ConfigWifi {
+  char wifissid[64];
+  char wifipassword[64];
+};
 
 uint32_t durasiadzan = 3000; // Durasi Adzan 1 detik = 1000 ms, 180000 berarti 180 detik atau 3 menit
 
@@ -97,6 +103,20 @@ HJS589 Disp(DISPLAYS_WIDE, DISPLAYS_HIGH);  // Jumlah Panel P10 yang digunakan (
 //WEB Server
 ESP8266WebServer server(80);
 
+const char* password = "grobaknet";
+const char* mySsid = "JWSP10"; //kalau gagal konek
+
+IPAddress local_ip(192, 168, 4, 1);
+IPAddress gateway(192, 168, 4, 1);
+IPAddress netmask(255, 255, 255, 0);
+
+const char *fileconfigjws = "/configjws.json";
+Config config;
+
+const char *fileconfigwifi = "/configwifi.json";
+ConfigWifi configwifi;
+
+
 
 //----------------------------------------------------------------------
 // XML UNTUK JEMBATAN DATA MESIN DENGAN WEB
@@ -107,6 +127,9 @@ void buildXML(){
   RtcTemperature temp = Rtc.GetTemperature();
   XML="<?xml version='1.0'?>";
   XML+="<t>";
+    XML+="<rWifissid>";
+    XML+= configwifi.wifissid;
+    XML+="</rWifissid>";
     XML+="<rYear>";
     XML+=now.Year();
     XML+="</rYear>";
@@ -137,6 +160,39 @@ void buildXML(){
     XML+="<rTemp>";
     XML+= temp.AsFloatDegC();
     XML+="</rTemp>";
+    XML+="<rIqmhs>";
+    XML+= config.iqmhs;
+    XML+="</rIqmhs>";
+    XML+="<rIqmhd>";
+    XML+= config.iqmhd;
+    XML+="</rIqmhd>";
+    XML+="<rIqmha>";
+    XML+= config.iqmha;
+    XML+="</rIqmha>";
+    XML+="<rIqmhm>";
+    XML+= config.iqmhm;
+    XML+="</rIqmhm>";
+    XML+="<rIqmhi>";
+    XML+= config.iqmhi;
+    XML+="</rIqmhi>";
+    XML+="<rIhti>";
+    XML+= config.ihti;
+    XML+="</rIhti>";
+    XML+="<rLatitude>";
+    XML+= config.latitude;
+    XML+="</rLatitude>";
+    XML+="<rLongitude>";
+    XML+= config.longitude;
+    XML+="</rLongitude>";
+    XML+="<rMerek>";
+    XML+= config.merek;
+    XML+="</rMerek>";
+    XML+="<rInfo1>";
+    XML+= config.info1;
+    XML+="</rInfo1>";
+    XML+="<rInfo2>";
+    XML+= config.info2;
+    XML+="</rInfo2>";
   XML+="</t>"; 
 }
 
@@ -158,26 +214,26 @@ void wifiConnect() {
 
   Serial.println("Wifi Sation Mode");
   WiFi.mode(WIFI_STA);
-  WiFi.begin(wifissid,wifipassword);
+  WiFi.begin(configwifi.wifissid,configwifi.wifipassword);
   unsigned long startTime = millis();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
     digitalWrite(pin_led, !digitalRead(pin_led));
-    if (millis() - startTime > 5000) break;
+    if (millis() - startTime > 3000) break;
   }
-
+  
   if (WiFi.status() == WL_CONNECTED) {
     digitalWrite(pin_led, HIGH);
   } else {
     Serial.println("Wifi AP Mode");
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(local_ip, gateway, netmask);
-    WiFi.softAP(ssid, password);
+    WiFi.softAP(mySsid, password);
     digitalWrite(pin_led, LOW);
   }
 
-  Serial.println("");
+  //Serial.println("");
   WiFi.printDiag(Serial);
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
@@ -191,67 +247,85 @@ void wifiConnect() {
 
 void setup() {
 
-  Serial.begin(115200);
+  Serial.begin(9600);
 
+  pinMode(pin_led, OUTPUT);
+
+  SPIFFS.begin();
+  
+  loadWifiConfig(fileconfigwifi, configwifi);
+  loadJwsConfig(fileconfigjws, config);
+  
   WiFi.hostname("elektronmart");
-  WiFi.begin(wifissid, wifipassword);
+  WiFi.begin(configwifi.wifissid, configwifi.wifipassword);
 
   wifiConnect();
   
-  server.on("/toggle", toggleLED);  
-
-  server.on ( "/xml", handleXML) ;
-  
   server.on("/", []() {
-    
-    server.send_P(200, "text/html", beranda);
-    
+    server.send_P(200, "text/html", setwaktu);
+
+    // Kalau ada perubahan tanggal
     if (server.hasArg("date")) {
     
-      uint16_t ano;
-      uint8_t mes;
-      uint8_t dia;
+      uint16_t jam;
+      uint8_t menit;
+      uint8_t detik;      
       String sd=server.arg("date");
       String lastSd;
-      ano = ((sd[0]-'0')*1000)+((sd[1]-'0')*100)+((sd[2]-'0')*10)+(sd[3]-'0');
-      mes = ((sd[5]-'0')*10)+(sd[6]-'0');
-      dia = ((sd[8]-'0')*10)+(sd[9]-'0');
+      
+      jam = ((sd[0]-'0')*1000)+((sd[1]-'0')*100)+((sd[2]-'0')*10)+(sd[3]-'0');
+      menit = ((sd[5]-'0')*10)+(sd[6]-'0');
+      detik = ((sd[8]-'0')*10)+(sd[9]-'0');
       
       if (sd != lastSd){
-        
         RtcDateTime now = Rtc.GetDateTime();
         uint8_t hour = now.Hour();
         uint8_t minute = now.Minute();
-        Rtc.SetDateTime(RtcDateTime(ano, mes, dia, hour, minute, 0));
+        Rtc.SetDateTime(RtcDateTime(jam, menit, detik, hour, minute, 0));
         lastSd=sd;
       }
   
      server.send ( 404 ,"text", message );
-     
-    }//if has date
     
-  // Jam ------------------------------------------------
+    }
+
+    // Kalau ada perubahaan jam
     if (server.hasArg("time")) {
       
       String st=server.arg("time");
       String lastSt;
-      uint8_t hora = ((st[0]-'0')*10)+(st[1]-'0');
-      uint8_t minuto = ((st[3]-'0')*10)+(st[4]-'0');
+      uint8_t jam = ((st[0]-'0')*10)+(st[1]-'0');
+      uint8_t menit = ((st[3]-'0')*10)+(st[4]-'0');
       
       if (st != lastSt){
-        
          RtcDateTime now = Rtc.GetDateTime();
          uint16_t year = now.Year();
          uint8_t month = now.Month();
          uint8_t day = now.Day();
-         Rtc.SetDateTime(RtcDateTime(year, month, day, hora, minuto, 0));
-         lastSt=st;
-       }
-       
+         Rtc.SetDateTime(RtcDateTime(year, month, day, jam, menit, 0));
+         lastSt=st;}
       server.send ( 404 ,"text", message );
   
-    }//if has time
+    }
   });
+
+  server.on("/setwifi", []() {
+    server.send_P(200, "text/html", setwifi);
+  });
+  
+  server.on("/toggle", toggleLED);
+  
+  server.on("/settingwifi", HTTP_POST, handleSettingWifiUpdate); 
+  
+  server.on("/setjws", []() {
+    server.send_P(200, "text/html", setjws);
+  });
+  
+  server.on("/settingjws", HTTP_POST, handleSettingJwsUpdate);
+
+  server.on ( "/xml", handleXML) ;
+  
+  
   
   server.begin();
   Serial.println("HTTP server started");
@@ -295,7 +369,7 @@ void setup() {
 uint8_t tampilanutama;
 
 void loop() {
-  
+
   server.handleClient();
 
   switch(tampilanutama) {
@@ -306,6 +380,7 @@ void loop() {
       Iqomah();
       break;
   }  
+
 
 }
 
@@ -318,7 +393,7 @@ uint8_t tampilanjam;
 
 void tampilan() {
   
-  if (tampilanjam > 5) {
+  if (tampilanjam > 6) {
     tampilanjam = 0;
   }
 
@@ -330,31 +405,254 @@ void tampilan() {
       break;  
       
     case 1 :
-      TampilJam();
+      JamJatuhPulse();
       AlarmSholat();
       break;
 
     case 2 :
-      TampilTanggal();
+      JamArabJatuhPulse();
       AlarmSholat();
       break;
 
     case 3 :
+      TampilTanggal();
+      AlarmSholat();
+      break;
+
+    case 4 :
       TampilSuhu();
       AlarmSholat();
       break;
       
-    case 4 :
+    case 5 :
       TampilJadwalSholat();
       AlarmSholat();
       break;
 
-    case 5 :
+    case 6 :
       TeksJalan();
       AlarmSholat();
       break;
   }
 
+}
+
+
+
+void JamJatuhPulse() {
+    
+  static uint8_t y;
+  static uint8_t d;           
+  static uint32_t pM;
+  uint32_t cM = millis();
+
+  static uint32_t pMPulse;
+  static uint8_t pulse;
+  
+  
+  if (cM - pMPulse >= 100) {
+    pMPulse = cM;
+    pulse++;
+  }
+  
+  if (pulse > 8) {
+    pulse=0;
+  }
+
+  if(cM - pM > 50) { 
+    if(d == 0 and y < 32) {
+      pM=cM;
+      y++;
+    }
+    if(d  == 1 and y > 0) {
+      pM=cM;
+      y--;
+    }    
+  }
+  
+  if(cM - pM > 15000 and y == 32) {
+    d=1;
+  }
+  
+  if(y == 32) {
+    Disp.drawRect(17,3+pulse,20,11-pulse,0,1);       
+  }
+  
+  if(y < 32) {
+    Disp.drawRect(17,3,20,11,0,0);
+  }
+   
+  if(y == 0 and d == 1) {
+    d=0;
+    Disp.clear();
+    tampilanjam = 2;
+  }
+  
+  TampilJamDinamis(y - 32);
+  
+    
+}
+
+
+
+void JamArabJatuhPulse() {
+    
+  static uint8_t y;
+  static uint8_t d;           
+  static uint32_t pM;
+  uint32_t cM = millis();
+
+  static uint32_t pMPulse;
+  static uint8_t pulse;
+  
+  
+  if (cM - pMPulse >= 100) {
+    pMPulse = cM;
+    pulse++;
+  }
+  
+  if (pulse > 8) {
+    pulse=0;
+  }
+
+  if(cM - pM > 50) { 
+    if(d == 0 and y < 32) {
+      pM=cM;
+      y++;
+    }
+    if(d  == 1 and y > 0) {
+      pM=cM;
+      y--;
+    }    
+  }
+  
+  if(cM - pM > 15000 and y == 32) {
+    d=1;
+  }
+  
+  if(y == 32) {
+    Disp.drawRect(14,3+pulse,17,11-pulse,0,1);       
+  }
+  
+  if(y < 32) {
+    Disp.drawRect(14,3,17,11,0,0);
+  }
+   
+  if(y == 0 and d == 1) {
+    d=0;
+    Disp.clear();
+    tampilanjam = 3;
+  }
+  
+  TampilJamArabDinamis(y - 32);
+  
+    
+}
+
+
+void JamJatuh() {
+    
+  static uint8_t y;
+  static uint8_t d;              
+  static uint32_t pM;
+  uint32_t cM = millis();
+  
+  static uint32_t pMKedip;
+  static boolean kedip;  
+
+  if (cM - pMKedip >= 500) {
+    pMKedip = cM;
+    kedip = !kedip;    
+  }
+
+  if(cM - pM > 50) { 
+    if(d == 0 and y < 32){
+      pM = cM;
+      y++;
+    }
+    
+    if(d == 1 and y > 0){
+      pM=cM;
+      y--;
+    }    
+  }
+  
+  if(cM - pM > 15000 and y == 32) {
+    d=1;    
+  }
+  
+  if (y==32) {
+    
+    if (kedip) {
+        // TITIK DUA ON
+        Disp.drawRect(18,3,19,5,1,1);
+        Disp.drawRect(18,9,19,11,1,1);
+    } else {
+        // TITIK DUA OFF
+        Disp.drawRect(18,3,19,5,0,0);
+        Disp.drawRect(18,9,19,11,0,0);          
+    }
+      
+  }
+  
+  if (y < 32) {
+    Disp.drawRect(18,3,19,5,0,0);
+    Disp.drawRect(18,9,19,11,0,0); 
+  }
+   
+  if (y == 3 and d==1) {
+    d=0;
+    Disp.clear();
+    tampilanjam = 2;
+  }  
+  
+  TampilJamDinamis(y-32); 
+    
+}
+
+
+void TampilJamDinamis(uint32_t y) {
+
+  RtcDateTime now = Rtc.GetDateTime();
+  char jam[3];
+  char menit[3];
+  char detik[3];
+  sprintf(jam,"%02d", now.Hour());
+  sprintf(menit,"%02d", now.Minute());
+  sprintf(detik,"%02d", now.Second());
+
+  //JAM
+  Disp.setFont(angka6x13);
+  Disp.drawText(3, y, jam);
+
+  //MENIT          
+  Disp.setFont(Font3x5);
+  Disp.drawText(22, y, menit);
+
+  //DETIK          
+  Disp.setFont(Font3x5);
+  Disp.drawText(22, y+8, detik);
+
+ 
+}
+
+
+void TampilJamArabDinamis(uint32_t y) {
+
+  RtcDateTime now = Rtc.GetDateTime();
+  char jam[3];
+  char menit[3];
+  sprintf(jam,"%02d", now.Hour());
+  sprintf(menit,"%02d", now.Minute());
+
+  //JAM
+  Disp.setFont(arab6x13);
+  Disp.drawText(0, y, jam);
+
+  //MENIT          
+  Disp.setFont(arab6x13);
+  Disp.drawText(19, y, menit);
+ 
 }
 
 
@@ -449,7 +747,7 @@ void TampilTanggal() {
     if (d >= 2) {
       d = 0;
       Disp.clear();
-      tampilanjam = 3;
+      tampilanjam = 4;
     }
   } 
   
@@ -478,13 +776,13 @@ void TampilSuhu(){
     Disp.setFont(Font3x5);    
     textCenter(0, "SUHU");
     sprintf(suhu,"%dC",celsius - koreksisuhu);
-    Disp.setFont(SystemFont5x7);
+    Disp.setFont(angkasm47);
     textCenter(8, suhu);
 
     if (d >= 2) {
       d = 0;
       Disp.clear();
-      tampilanjam = 4;
+      tampilanjam = 5;
     }  
 
   } 
@@ -535,7 +833,6 @@ void TampilJadwalSholat() {
   char sholat[7];
   char jam[5];
   char TimeName[][8] = {"SUBUH","TERBIT","DZUHUR","ASHAR","TRBNM","MAGHRIB"," ISYA'"};
-  //char NamaSholat[] = {TimeName[0],TimeName[2],TimeName[3],TimeName[5],TimeName[6]};
   int hours, minutes;    
   
   if (cM - pM >= 2000) {
@@ -548,7 +845,7 @@ void TampilJadwalSholat() {
 
     get_float_time_parts(times[i], hours, minutes);
   
-    minutes = minutes + ihti;
+    minutes = minutes + config.ihti;
     
     if (minutes >= 60) {
       minutes = minutes - 60;
@@ -560,14 +857,14 @@ void TampilJadwalSholat() {
     
     Disp.setFont(Font3x5);
     textCenter(0,sholat);
-    Disp.setFont(SystemFont5x7);
+    Disp.setFont(angkasm47);
     textCenter(8,jam);
     
     i++;    
     
     if (i > 7) {
       get_float_time_parts(times[0], hours, minutes);
-      minutes = minutes + ihti;
+      minutes = minutes + config.ihti;
       if (minutes < 11) {
         minutes = 60 - minutes;
         hours --;
@@ -577,13 +874,13 @@ void TampilJadwalSholat() {
       sprintf(jam,"%02d:%02d", hours, minutes);
       Disp.setFont(Font3x5);
       textCenter(0,"TANBIH");
-      Disp.setFont(SystemFont5x7);
+      Disp.setFont(angkasm47);
       textCenter(8,jam);
       
       if (i > 8) {
         i = 0;
         Disp.clear();
-        tampilanjam = 5;
+        tampilanjam = 6;
       }
       
     }  
@@ -611,7 +908,7 @@ void AlarmSholat() {
 
   // Tanbih Imsak
   get_float_time_parts(times[0], hours, minutes);
-  minutes = minutes + ihti;
+  minutes = minutes + config.ihti;
 
   if (minutes < 11) {
     minutes = 60 - minutes;
@@ -632,7 +929,7 @@ void AlarmSholat() {
 
   // Subuh
   get_float_time_parts(times[0], hours, minutes);
-  minutes = minutes + ihti;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -647,13 +944,13 @@ void AlarmSholat() {
     delay(durasiadzan);
     Disp.clear();
 
-    iqmh = iqmhs;
+    iqmh = config.iqmhs;
     tampilanutama = 1;
   }
 
   // Dzuhur
   get_float_time_parts(times[2], hours, minutes);
-  minutes = minutes + ihti;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -668,7 +965,7 @@ void AlarmSholat() {
     delay(durasiadzan);
     Disp.clear();
 
-    iqmh = iqmhd;
+    iqmh = config.iqmhd;
     tampilanutama = 1;
 
   } else if (Hor == hours && Min == minutes && Hari == 5) {
@@ -682,7 +979,7 @@ void AlarmSholat() {
 
   // Ashar
   get_float_time_parts(times[3], hours, minutes);
-  minutes = minutes + ihti;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -697,13 +994,13 @@ void AlarmSholat() {
     delay(durasiadzan);
     Disp.clear();
 
-    iqmh = iqmha;
+    iqmh = config.iqmha;
     tampilanutama = 1;
   }
 
   // Maghrib
   get_float_time_parts(times[5], hours, minutes);
-  minutes = minutes + ihti;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -718,13 +1015,13 @@ void AlarmSholat() {
     delay(durasiadzan);
     Disp.clear();
 
-    iqmh = iqmhm;
+    iqmh = config.iqmhm;
     tampilanutama = 1;
   }
 
   // Isya'
   get_float_time_parts(times[6], hours, minutes);
-  minutes = minutes + ihti;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -739,7 +1036,7 @@ void AlarmSholat() {
     delay(durasiadzan);
     Disp.clear();
 
-    iqmh = iqmhi;
+    iqmh = config.iqmhi;
     tampilanutama = 1;
   }
 
@@ -783,7 +1080,7 @@ void Iqomah() {
   }
   
   sprintf(hitungmundur, "%02d:%02d", menit, detik);
-  Disp.setFont(SystemFont5x7);
+  Disp.setFont(angkasm47);
   textCenter(9, hitungmundur);
   
 }
@@ -824,7 +1121,7 @@ void BuzzerPendek() {
 //----------------------------------------------------------------------
 // TAMPILKAN SCROLLING TEKS YANG DIINPUT MELALUI WEBSITE
 
-static const char pesan[] = "MASJID AL KAUTSAR";
+static char *merek[] = {config.merek};
 
 void TeksJalan() {
 
@@ -833,8 +1130,8 @@ void TeksJalan() {
   static uint32_t x;
   static uint32_t Speed = 50;
   int width = Disp.width();
-  Disp.setFont(SystemFont5x7);
-  int fullScroll = Disp.textWidth(pesan) + width;
+  Disp.setFont(Britannic);
+  int fullScroll = Disp.textWidth(merek[0]) + width;
   if((millis() - pM) > Speed) { 
     pM = millis();
     if (x < fullScroll) {
@@ -844,7 +1141,7 @@ void TeksJalan() {
       tampilanjam = 0;
       return;
     }
-    Disp.drawText(width - x, 3, pesan);
+    Disp.drawText(width - x, 3, merek[0]);
   }
 
   durasi = (fullScroll * Speed) + (fullScroll * 5);
@@ -956,7 +1253,7 @@ void logobx(uint32_t x) {
 void toggleLED() {
 
   digitalWrite(pin_led, !digitalRead(pin_led));
-  server.send_P(200, "text/html", beranda);
+  server.send_P(200, "text/html", setwaktu);
 
 }
 
@@ -968,7 +1265,8 @@ void toggleLED() {
 void ICACHE_RAM_ATTR refresh() { 
   
   Disp.refresh();
-  timer0_write(ESP.getCycleCount() + 40000);
+  timer0_write(ESP.getCycleCount() + 32000);
+  
 
 }
 
@@ -977,7 +1275,7 @@ void Disp_init() {
   
   Disp.start();
   timer0_attachInterrupt(refresh);
-  timer0_write(ESP.getCycleCount() + 40000);
+  //timer0_write(ESP.getCycleCount() + 40000);
   Disp.setBrightness(100);  
   Disp.clear();
   
@@ -1013,4 +1311,143 @@ void branding() {
   delay(1000);
   Disp.clear();
   
+}
+
+
+
+void handleSettingJwsUpdate() {
+
+  timer0_detachInterrupt();
+
+  String datajws = server.arg("plain");
+  DynamicJsonBuffer jBuffer;
+  JsonObject& jObject = jBuffer.parseObject(datajws);
+
+  File configFileJws = SPIFFS.open(fileconfigjws, "w");
+  if (!configFileJws) {
+    Serial.println("Error opening JWS configFile for writing");
+    return;
+  }
+  jObject.printTo(configFileJws);
+
+  if (jObject.success()) {
+    
+    configFileJws.flush();
+    configFileJws.close();
+    Serial.println("Berhasil mengubah configFileJws");
+    
+    server.send(200, "application/json", "{\"status\":\"ok\"}");    
+
+    delay(3000);
+    ESP.restart();
+  
+  }  
+
+}
+
+
+
+void handleSettingWifiUpdate() {
+
+  timer0_detachInterrupt();
+  
+  String data = server.arg("plain");
+  DynamicJsonBuffer jBuffer;
+  JsonObject& jObject = jBuffer.parseObject(data);
+
+  File configFile = SPIFFS.open("/configwifi.json", "w");
+  if (!configFile) {
+    Serial.println("Error opening Wifi configFile for writing");
+    return;
+  }
+  jObject.printTo(configFile);
+
+  if (jObject.success()) {
+
+    configFile.flush();
+    configFile.close();
+    Serial.println("Berhasil mengubah configFileWifi");
+    
+    server.send(200, "application/json", "{\"status\":\"ok\"}");
+
+    delay(3000);
+    ESP.restart();
+
+  } 
+
+}
+
+
+
+void loadWifiConfig(const char *fileconfigwifi, ConfigWifi &configwifi) {
+
+  timer0_detachInterrupt();
+  
+  File configFileWifi = SPIFFS.open(fileconfigwifi, "r");
+  
+  if (!configFileWifi) {
+    Serial.println("Gagal membuka fileconfigwifi untuk dibaca");
+    return;
+  }
+
+  size_t size = configFileWifi.size();
+  std::unique_ptr<char[]> buf(new char[size]);
+  configFileWifi.readBytes(buf.get(), size);
+
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& jObject = jsonBuffer.parseObject(buf.get());
+
+  if (!jObject.success()) {
+    Serial.println("Gagal untuk parse config file");
+    return;
+  }
+
+  strlcpy(configwifi.wifissid, jObject["wifissid"] | "grobak.net", sizeof(configwifi.wifissid));
+  strlcpy(configwifi.wifipassword, jObject["wifipassword"] | "", sizeof(configwifi.wifipassword));
+
+  configFileWifi.flush();
+  configFileWifi.close();
+
+}
+
+
+
+void loadJwsConfig(const char *fileconfigjws, Config &config) {
+
+  timer0_detachInterrupt();
+  
+  File configFileJws = SPIFFS.open(fileconfigjws, "r");
+  
+  if (!configFileJws) {
+    Serial.println("Gagal membuka fileconfigjws untuk dibaca");
+    return;
+  }
+
+  size_t size = configFileJws.size();
+  std::unique_ptr<char[]> buf(new char[size]);
+  configFileJws.readBytes(buf.get(), size);
+
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& jObject = jsonBuffer.parseObject(buf.get());
+
+  if (!jObject.success()) {
+    Serial.println("Gagal parse fileconfigjws");
+    return;
+  }
+
+  config.iqmhs = jObject["iqmhs"];
+  config.iqmhd = jObject["iqmhd"];
+  config.iqmha = jObject["iqmha"];
+  config.iqmhm = jObject["iqmhm"];
+  config.iqmhi = jObject["iqmhi"];
+  config.ihti = jObject["ihti"];
+  config.latitude = jObject["latitude"];
+  config.longitude = jObject["longitude"];
+  strlcpy(config.merek, jObject["merek"] | "GROBAK", sizeof(config.merek));
+  strlcpy(config.info1, jObject["info1"] | "ELEKTRON", sizeof(config.info1));
+  strlcpy(config.info2, jObject["info2"] | " MART ", sizeof(config.info2));
+
+  configFileJws.flush();
+  configFileJws.close();
+
 }
