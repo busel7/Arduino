@@ -21,7 +21,7 @@ o Saat Flashing (upload program) cabut sementara pin untuk buzzer.
 
 Eksternal Library
 
-- HJS589 : DMD3
+- HJS589 : DMD3 : DMD
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
 
