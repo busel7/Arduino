@@ -3,9 +3,7 @@
  * FITUR :  JADWAL SHOLAT 5 WAKTU DAN TANBIH IMSAK, JAM BESAR, TANGGAL, SUHU, ALARAM ADZAN DAN TANBIH IMSAK,
  *          DAN HITUNG MUNDUR IQOMAH DAN UBAH WAKTU LEWAT WIFI DENGAN BROWSER.
  * 
-
 Pin on  DMD P10     GPIO      NODEMCU               Pin on  DS3231      NODEMCU                   Pin on  Buzzer       NODEMCU
-
         2  A        GPIO16    D0                            SCL         D1 (GPIO 5)                       +            RX (GPIO 3)
         4  B        GPIO12    D6                            SDA         D2 (GPIO 4)                       -            GND
         8  CLK      GPIO14    D5                            VCC         3V
@@ -13,18 +11,13 @@ Pin on  DMD P10     GPIO      NODEMCU               Pin on  DS3231      NODEMCU 
         12 R        GPIO13    D7
         1  NOE      GPIO15    D8
         3  GND      GND       GND
-
 Catatan : 
-
 o Perlu Power Eksternal 5V ke LED P10.
 o Saat Flashing (upload program) cabut sementara pin untuk buzzer.
-
 Eksternal Library
-
 - HJS589 : DMD3
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
-
 email : bonny@grobak.net - www.grobak.net
 */
 
@@ -1265,8 +1258,7 @@ void toggleLED() {
 void ICACHE_RAM_ATTR refresh() { 
   
   Disp.refresh();
-  timer0_write(ESP.getCycleCount() + 32000);
-  
+  timer0_write(ESP.getCycleCount() + 40000);  
 
 }
 
@@ -1275,7 +1267,7 @@ void Disp_init() {
   
   Disp.start();
   timer0_attachInterrupt(refresh);
-  //timer0_write(ESP.getCycleCount() + 40000);
+  timer0_write(ESP.getCycleCount() + 40000);
   Disp.setBrightness(100);  
   Disp.clear();
   
@@ -1337,9 +1329,12 @@ void handleSettingJwsUpdate() {
     Serial.println("Berhasil mengubah configFileJws");
     
     server.send(200, "application/json", "{\"status\":\"ok\"}");    
-
-    delay(3000);
-    ESP.restart();
+    
+    loadJwsConfig(fileconfigjws, config);
+    
+    delay(500);
+    timer0_attachInterrupt(refresh);
+    timer0_write(ESP.getCycleCount() + 40000);
   
   }  
 
@@ -1369,9 +1364,11 @@ void handleSettingWifiUpdate() {
     Serial.println("Berhasil mengubah configFileWifi");
     
     server.send(200, "application/json", "{\"status\":\"ok\"}");
+    loadWifiConfig(fileconfigwifi, configwifi);
 
-    delay(3000);
-    ESP.restart();
+    delay(500);
+    timer0_attachInterrupt(refresh);
+    timer0_write(ESP.getCycleCount() + 40000);
 
   } 
 
