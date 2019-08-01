@@ -60,6 +60,7 @@ Buzzer
 - DMD2 : https://github.com/freetronics/DMD2
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
+- ArduinoJson V5 : https://github.com/bblanchon/ArduinoJson
         
 ### Catatan : 
 - Perlu Power Eksternal 5V ke LED P10.
