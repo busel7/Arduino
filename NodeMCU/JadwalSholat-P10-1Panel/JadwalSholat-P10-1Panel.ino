@@ -1081,7 +1081,7 @@ void Iqomah() {
   
   sprintf(hitungmundur, "%02d:%02d", menit, detik);
   Disp.setFont(angkasm47);
-  textCenter(9, hitungmundur);
+  textCenter(8, hitungmundur);
   
 }
 
