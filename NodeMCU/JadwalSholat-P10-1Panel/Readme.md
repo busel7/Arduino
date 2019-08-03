@@ -67,4 +67,4 @@ Buzzer
 - Perlu Power Eksternal 5V ke LED P10.
 - Saat Flashing (upload program) cabut sementara pin untuk buzzer.
 
-> email : bonny@grobak.net - www.grobak.net
+> email : bonny@grobak.net - www.grobak.net - www.elektronmart.com
