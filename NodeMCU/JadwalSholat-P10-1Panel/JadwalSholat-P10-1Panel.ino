@@ -3,6 +3,7 @@
  * FITUR :  JADWAL SHOLAT 5 WAKTU DAN TANBIH IMSAK, JAM BESAR, TANGGAL, SUHU, ALARAM ADZAN DAN TANBIH IMSAK,
  *          DAN HITUNG MUNDUR IQOMAH DAN UBAH WAKTU LEWAT WIFI DENGAN BROWSER.
  * 
+
 Pin on  DMD P10     GPIO      NODEMCU               Pin on  DS3231      NODEMCU                   Pin on  Buzzer       NODEMCU
         2  A        GPIO16    D0                            SCL         D1 (GPIO 5)                       +            RX (GPIO 3)
         4  B        GPIO12    D6                            SDA         D2 (GPIO 4)                       -            GND
@@ -11,14 +12,17 @@ Pin on  DMD P10     GPIO      NODEMCU               Pin on  DS3231      NODEMCU 
         12 R        GPIO13    D7
         1  NOE      GPIO15    D8
         3  GND      GND       GND
+
 Catatan : 
 o Perlu Power Eksternal 5V ke LED P10.
 o Saat Flashing (upload program) cabut sementara pin untuk buzzer.
+
 Eksternal Library
-- HJS589 : DMD3
+- HJS589(DMD3 porting for ESP8266 by Ahmad Herman) < DMD3 by Wardi Utari @ MFH Robotic (info https://www.facebook.com/MFH.Robotic/)) < DMD : https://github.com/freetronics/DMD
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
-email : bonny@grobak.net - www.grobak.net
+
+email : bonny@grobak.net - www.grobak.net - www.elektronmart.com
 */
 
 
@@ -56,7 +60,7 @@ struct Config {
   int ihti; // Koreksi Waktu Menit Jadwal Sholat
   float latitude;
   float longitude;
-  char merek[64];
+  char nama[64];
   char info1[512];
   char info2[512];
 };
@@ -66,6 +70,10 @@ int iqmh;
 struct ConfigWifi {
   char wifissid[64];
   char wifipassword[64];
+};
+
+struct ConfigDisp {
+  int cerah;
 };
 
 uint32_t durasiadzan = 3000; // Durasi Adzan 1 detik = 1000 ms, 180000 berarti 180 detik atau 3 menit
@@ -102,6 +110,10 @@ const char* mySsid = "JWSP10"; //kalau gagal konek
 IPAddress local_ip(192, 168, 4, 1);
 IPAddress gateway(192, 168, 4, 1);
 IPAddress netmask(255, 255, 255, 0);
+
+
+const char *fileconfigdisp = "/configdisp.json";
+ConfigDisp configdisp;
 
 const char *fileconfigjws = "/configjws.json";
 Config config;
@@ -177,15 +189,18 @@ void buildXML(){
     XML+="<rLongitude>";
     XML+= config.longitude;
     XML+="</rLongitude>";
-    XML+="<rMerek>";
-    XML+= config.merek;
-    XML+="</rMerek>";
+    XML+="<rNama>";
+    XML+= config.nama;
+    XML+="</rNama>";
     XML+="<rInfo1>";
     XML+= config.info1;
     XML+="</rInfo1>";
     XML+="<rInfo2>";
     XML+= config.info2;
     XML+="</rInfo2>";
+    XML+="<rCerah>";
+    XML+= configdisp.cerah;
+    XML+="</rCerah>";
   XML+="</t>"; 
 }
 
@@ -236,6 +251,93 @@ void wifiConnect() {
 
 
 //----------------------------------------------------------------------
+// HJS589 P10 FUNGSI TAMBAHAN UNTUK NODEMCU ESP8266
+
+void ICACHE_RAM_ATTR refresh() { 
+  
+  Disp.refresh();
+  timer0_write(ESP.getCycleCount() + 40000);  
+
+}
+
+void Disp_init() {
+  
+  Disp.start();
+  timer0_attachInterrupt(refresh);
+  timer0_write(ESP.getCycleCount() + 40000);
+  Disp.clear();
+  
+}
+
+
+
+//----------------------------------------------------------------------
+// HJS589 P10 FUNGSI TAMBAHAN UNTUK NODEMCU ESP8266
+
+void LoadDataAwal() {
+
+
+  if (config.iqmhs == 0) {
+    config.iqmhs = 12;    
+  }
+
+  if (config.iqmhd == 0) {
+    config.iqmhd = 8;    
+  }
+
+  if (config.iqmha == 0) {
+    config.iqmha = 6;    
+  }
+
+  if (config.iqmhm == 0) {
+    config.iqmhm = 5;    
+  }
+
+  if (config.iqmhi == 0) {
+    config.iqmhi = 5;    
+  }
+
+  if (config.ihti == 0) {
+    config.ihti = 2;    
+  }
+
+  if (config.latitude == 0) {
+    config.latitude = -6.16;    
+  }
+
+  if (config.longitude == 0) {
+    config.longitude = 106.61;    
+  }
+
+  if (strlen(config.nama) == 0) {
+    strlcpy(config.nama, "MASJID AL KAUTSAR", sizeof(config.nama));
+  }
+
+  if (strlen(config.info1) == 0) {
+    strlcpy(config.info1, "www.grobak.net", sizeof(config.info1));
+  }
+
+  if (strlen(config.info2) == 0) {
+    strlcpy(config.info2, "www.elektronmart.com", sizeof(config.info2));
+  }
+
+  if (strlen(configwifi.wifissid) == 0) {
+    strlcpy(configwifi.wifissid, "grobak.net", sizeof(configwifi.wifissid));
+  }
+
+  if (strlen(configwifi.wifipassword) == 0) {
+    strlcpy(configwifi.wifipassword, "password", sizeof(configwifi.wifipassword));
+  }
+
+  if (configdisp.cerah == 0) {
+    configdisp.cerah = 100;    
+  }
+  
+}
+
+
+
+//----------------------------------------------------------------------
 // SETUP
 
 void setup() {
@@ -248,7 +350,10 @@ void setup() {
   
   loadWifiConfig(fileconfigwifi, configwifi);
   loadJwsConfig(fileconfigjws, config);
-  
+  loadDispConfig(fileconfigdisp, configdisp);
+
+  LoadDataAwal();
+   
   WiFi.hostname("elektronmart");
   WiFi.begin(configwifi.wifissid, configwifi.wifipassword);
 
@@ -302,11 +407,11 @@ void setup() {
     }
   });
 
+  server.on("/toggle", toggleLED);
+
   server.on("/setwifi", []() {
     server.send_P(200, "text/html", setwifi);
-  });
-  
-  server.on("/toggle", toggleLED);
+  });  
   
   server.on("/settingwifi", HTTP_POST, handleSettingWifiUpdate); 
   
@@ -316,9 +421,13 @@ void setup() {
   
   server.on("/settingjws", HTTP_POST, handleSettingJwsUpdate);
 
-  server.on ( "/xml", handleXML) ;
-  
-  
+  server.on("/setdisplay", []() {
+    server.send_P(200, "text/html", setdisplay);
+  });  
+
+  server.on("/settingdisp", HTTP_POST, handleSettingDispUpdate);
+
+  server.on ( "/xml", handleXML) ;  
   
   server.begin();
   Serial.println("HTTP server started");
@@ -347,11 +456,243 @@ void setup() {
 
   //DMD
   Disp_init();
-  Disp.setBrightness(64);
+  
+  Disp.setBrightness(configdisp.cerah);
 
   // BRANDING
   branding();
   
+}
+
+
+
+void loadDispConfig(const char *fileconfigdisp, ConfigDisp &configdisp) {
+
+  File configFileDisp = SPIFFS.open(fileconfigdisp, "r");
+
+  if (!configFileDisp) {
+    Serial.println("Gagal membuka fileconfigdisp untuk dibaca");
+    return;
+  }
+
+  size_t size = configFileDisp.size();
+  std::unique_ptr<char[]> buf(new char[size]);
+  configFileDisp.readBytes(buf.get(), size);
+
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, buf.get());
+
+  if (error) {
+    Serial.println("Gagal parse fileconfigdisp");
+    return;
+  }
+  
+  configdisp.cerah = doc["cerah"];
+
+  configFileDisp.close();
+
+}
+
+
+
+void handleSettingDispUpdate() {
+
+  timer0_detachInterrupt();
+  
+  String datadisp = server.arg("plain");
+  
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, datadisp);
+
+  File configFileDisp = SPIFFS.open(fileconfigdisp, "w");
+  
+  if (!configFileDisp) {
+    Serial.println("Gagal membuka Display configFile untuk ditulis");
+    return;
+  }
+  
+  serializeJson(doc, configFileDisp);
+
+  if (error) {
+    
+    Serial.print(F("deserializeJson() gagal kode sebagai berikut: "));
+    Serial.println(error.c_str());
+    return;
+    
+  } else {
+    
+    configFileDisp.close();
+    Serial.println("Berhasil mengubah configFileDisp");
+
+    server.send(200, "application/json", "{\"status\":\"ok\"}");
+
+    loadDispConfig(fileconfigdisp, configdisp);
+    
+    delay(500);
+    timer0_attachInterrupt(refresh);
+    timer0_write(ESP.getCycleCount() + 40000);
+
+    Disp.setBrightness(configdisp.cerah);
+  
+  }  
+
+}
+
+
+
+
+
+
+void loadJwsConfig(const char *fileconfigjws, Config &config) {
+
+  File configFileJws = SPIFFS.open(fileconfigjws, "r");
+  
+  if (!configFileJws) {
+    Serial.println("Gagal membuka fileconfigjws untuk dibaca");
+    return;
+  }
+
+  size_t size = configFileJws.size();
+  std::unique_ptr<char[]> buf(new char[size]);
+  configFileJws.readBytes(buf.get(), size);
+
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, buf.get());
+
+  if (error) {
+    Serial.println("Gagal parse fileconfigjws");
+    return;
+  }
+
+  config.iqmhs = doc["iqmhs"];
+  config.iqmhd = doc["iqmhd"];
+  config.iqmha = doc["iqmha"];
+  config.iqmhm = doc["iqmhm"];
+  config.iqmhi = doc["iqmhi"];
+  config.ihti = doc["ihti"];
+  config.latitude = doc["latitude"];
+  config.longitude = doc["longitude"];
+  strlcpy(config.nama, doc["nama"] | "MASJID AL KAUTSAR", sizeof(config.nama));  // Set awal Nama
+  strlcpy(config.info1, doc["info1"] | "www.grobak.net", sizeof(config.info1));  // Set awal Info1 
+  strlcpy(config.info2, doc["info2"] | "www.elektronmart.com", sizeof(config.info2));  // Set awal Info2
+
+  configFileJws.close();
+
+}
+
+
+
+void handleSettingJwsUpdate() {
+
+  timer0_detachInterrupt();
+
+  String datajws = server.arg("plain");
+  
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, datajws);
+
+  File configFileJws = SPIFFS.open(fileconfigjws, "w");
+  
+  if (!configFileJws) {
+    Serial.println("Gagal membuka JWS configFile untuk ditulis");
+    return;
+  }
+  
+  serializeJson(doc, configFileJws);
+
+  if (error) {
+    
+    Serial.print(F("deserializeJson() gagal kode sebagai berikut: "));
+    Serial.println(error.c_str());
+    return;
+    
+  } else {
+    
+    configFileJws.close();
+    Serial.println("Berhasil mengubah configFileJws");
+    
+    server.send(200, "application/json", "{\"status\":\"ok\"}");    
+    
+    loadJwsConfig(fileconfigjws, config);
+    
+    delay(500);
+    timer0_attachInterrupt(refresh);
+    timer0_write(ESP.getCycleCount() + 40000);
+  
+  }  
+
+}
+
+
+
+void loadWifiConfig(const char *fileconfigwifi, ConfigWifi &configwifi) {
+
+  File configFileWifi = SPIFFS.open(fileconfigwifi, "r");
+  
+  if (!configFileWifi) {
+    Serial.println("Gagal membuka fileconfigwifi untuk dibaca");
+    return;
+  }
+
+  size_t size = configFileWifi.size();
+  std::unique_ptr<char[]> buf(new char[size]);
+  configFileWifi.readBytes(buf.get(), size);
+
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, buf.get());
+
+  if (error) {
+    Serial.println("Gagal untuk parse config file");
+    return;
+  }
+
+  strlcpy(configwifi.wifissid, doc["wifissid"] | "grobak.net", sizeof(configwifi.wifissid));
+  strlcpy(configwifi.wifipassword, doc["wifipassword"] | "12345", sizeof(configwifi.wifipassword));
+
+  configFileWifi.close();
+
+}
+
+
+
+void handleSettingWifiUpdate() {
+
+  timer0_detachInterrupt();
+  
+  String data = server.arg("plain");
+
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, data);
+
+  File configFile = SPIFFS.open("/configwifi.json", "w");
+  if (!configFile) {
+    Serial.println("Error opening Wifi configFile for writing");
+    return;
+    
+  }
+  
+  serializeJson(doc, configFile);
+
+  if (error) {
+    
+    Serial.print(F("deserializeJson() gagal kode sebagai berikut: "));
+    Serial.println(error.c_str());
+    return;
+    
+  } else {
+
+    configFile.close();
+    Serial.println("Berhasil mengubah configFileWifi");
+    
+    server.send(200, "application/json", "{\"status\":\"ok\"}");
+    loadWifiConfig(fileconfigwifi, configwifi);
+
+    delay(500);
+    timer0_attachInterrupt(refresh);
+    timer0_write(ESP.getCycleCount() + 40000);
+
+  } 
+
 }
 
 
@@ -386,7 +727,7 @@ uint8_t tampilanjam;
 
 void tampilan() {
   
-  if (tampilanjam > 6) {
+  if (tampilanjam > 8) {
     tampilanjam = 0;
   }
 
@@ -423,7 +764,15 @@ void tampilan() {
       break;
 
     case 6 :
-      TeksJalan();
+      TeksJalanNama();
+      AlarmSholat();
+      break;
+    case 7 :
+      TeksJalanInfo1();
+      AlarmSholat();
+      break;
+    case 8 :
+      TeksJalanInfo2();
       AlarmSholat();
       break;
   }
@@ -1111,20 +1460,77 @@ void BuzzerPendek() {
 
 
 
-//----------------------------------------------------------------------
-// TAMPILKAN SCROLLING TEKS YANG DIINPUT MELALUI WEBSITE
+//-------------------------------------------------------
+// TAMPILKAN SCROLLING TEKS NAMA
 
-static char *merek[] = {config.merek};
+static char *nama[] = {config.nama};
 
-void TeksJalan() {
+void TeksJalanNama() {
 
-  static uint16_t durasi;
   static uint32_t pM;
   static uint32_t x;
   static uint32_t Speed = 50;
   int width = Disp.width();
   Disp.setFont(Britannic);
-  int fullScroll = Disp.textWidth(merek[0]) + width;
+  int fullScroll = Disp.textWidth(nama[0]) + width;
+  if((millis() - pM) > Speed) { 
+    pM = millis();
+    if (x < fullScroll) {
+      ++x;
+    } else {
+      x = 0;
+      tampilanjam = 7;
+      return;
+    }
+    Disp.drawText(width - x, 3, nama[0]);
+  }  
+
+}
+
+
+
+//-------------------------------------------------------
+// TAMPILKAN SCROLLING TEKS INFO1
+
+static char *info1[] = {config.info1};
+
+void TeksJalanInfo1() {
+
+  static uint32_t pM;
+  static uint32_t x;
+  static uint32_t Speed = 50;
+  int width = Disp.width();
+  Disp.setFont(Britannic);
+  int fullScroll = Disp.textWidth(info1[0]) + width;
+  if((millis() - pM) > Speed) { 
+    pM = millis();
+    if (x < fullScroll) {
+      ++x;
+    } else {
+      x = 0;
+      tampilanjam = 8;
+      return;
+    }
+    Disp.drawText(width - x, 3, info1[0]);
+  }  
+
+}
+
+
+
+//-------------------------------------------------------
+// TAMPILKAN SCROLLING TEKS INFO2
+
+static char *info2[] = {config.info2};
+
+void TeksJalanInfo2() {
+
+  static uint32_t pM;
+  static uint32_t x;
+  static uint32_t Speed = 50;
+  int width = Disp.width();
+  Disp.setFont(Britannic);
+  int fullScroll = Disp.textWidth(info2[0]) + width;
   if((millis() - pM) > Speed) { 
     pM = millis();
     if (x < fullScroll) {
@@ -1134,11 +1540,8 @@ void TeksJalan() {
       tampilanjam = 0;
       return;
     }
-    Disp.drawText(width - x, 3, merek[0]);
-  }
-
-  durasi = (fullScroll * Speed) + (fullScroll * 5);
-  
+    Disp.drawText(width - x, 3, info2[0]);
+  }  
 
 }
 
@@ -1253,35 +1656,6 @@ void toggleLED() {
 
 
 //----------------------------------------------------------------------
-// HJS589 P10 FUNGSI TAMBAHAN UNTUK NODEMCU ESP8266
-
-void ICACHE_RAM_ATTR refresh() { 
-  
-  Disp.refresh();
-  timer0_write(ESP.getCycleCount() + 40000);  
-
-}
-
-
-void Disp_init() {
-  
-  Disp.start();
-  timer0_attachInterrupt(refresh);
-  timer0_write(ESP.getCycleCount() + 40000);
-  Disp.setBrightness(100);  
-  Disp.clear();
-  
-}
-
-void setBrightness(int bright) {
-  
-  Disp.setBrightness(bright);
-
-}
-
-
-
-//----------------------------------------------------------------------
 // HJS589 P10 utility Function
 
 void branding() {
@@ -1303,148 +1677,4 @@ void branding() {
   delay(1000);
   Disp.clear();
   
-}
-
-
-
-void handleSettingJwsUpdate() {
-
-  timer0_detachInterrupt();
-
-  String datajws = server.arg("plain");
-  DynamicJsonBuffer jBuffer;
-  JsonObject& jObject = jBuffer.parseObject(datajws);
-
-  File configFileJws = SPIFFS.open(fileconfigjws, "w");
-  if (!configFileJws) {
-    Serial.println("Error opening JWS configFile for writing");
-    return;
-  }
-  jObject.printTo(configFileJws);
-
-  if (jObject.success()) {
-    
-    configFileJws.flush();
-    configFileJws.close();
-    Serial.println("Berhasil mengubah configFileJws");
-    
-    server.send(200, "application/json", "{\"status\":\"ok\"}");    
-    
-    loadJwsConfig(fileconfigjws, config);
-    
-    delay(500);
-    timer0_attachInterrupt(refresh);
-    timer0_write(ESP.getCycleCount() + 40000);
-  
-  }  
-
-}
-
-
-
-void handleSettingWifiUpdate() {
-
-  timer0_detachInterrupt();
-  
-  String data = server.arg("plain");
-  DynamicJsonBuffer jBuffer;
-  JsonObject& jObject = jBuffer.parseObject(data);
-
-  File configFile = SPIFFS.open("/configwifi.json", "w");
-  if (!configFile) {
-    Serial.println("Error opening Wifi configFile for writing");
-    return;
-  }
-  jObject.printTo(configFile);
-
-  if (jObject.success()) {
-
-    configFile.flush();
-    configFile.close();
-    Serial.println("Berhasil mengubah configFileWifi");
-    
-    server.send(200, "application/json", "{\"status\":\"ok\"}");
-    loadWifiConfig(fileconfigwifi, configwifi);
-
-    delay(500);
-    timer0_attachInterrupt(refresh);
-    timer0_write(ESP.getCycleCount() + 40000);
-
-  } 
-
-}
-
-
-
-void loadWifiConfig(const char *fileconfigwifi, ConfigWifi &configwifi) {
-
-  timer0_detachInterrupt();
-  
-  File configFileWifi = SPIFFS.open(fileconfigwifi, "r");
-  
-  if (!configFileWifi) {
-    Serial.println("Gagal membuka fileconfigwifi untuk dibaca");
-    return;
-  }
-
-  size_t size = configFileWifi.size();
-  std::unique_ptr<char[]> buf(new char[size]);
-  configFileWifi.readBytes(buf.get(), size);
-
-  DynamicJsonBuffer jsonBuffer;
-  JsonObject& jObject = jsonBuffer.parseObject(buf.get());
-
-  if (!jObject.success()) {
-    Serial.println("Gagal untuk parse config file");
-    return;
-  }
-
-  strlcpy(configwifi.wifissid, jObject["wifissid"] | "grobak.net", sizeof(configwifi.wifissid));
-  strlcpy(configwifi.wifipassword, jObject["wifipassword"] | "", sizeof(configwifi.wifipassword));
-
-  configFileWifi.flush();
-  configFileWifi.close();
-
-}
-
-
-
-void loadJwsConfig(const char *fileconfigjws, Config &config) {
-
-  timer0_detachInterrupt();
-  
-  File configFileJws = SPIFFS.open(fileconfigjws, "r");
-  
-  if (!configFileJws) {
-    Serial.println("Gagal membuka fileconfigjws untuk dibaca");
-    return;
-  }
-
-  size_t size = configFileJws.size();
-  std::unique_ptr<char[]> buf(new char[size]);
-  configFileJws.readBytes(buf.get(), size);
-
-  DynamicJsonBuffer jsonBuffer;
-  JsonObject& jObject = jsonBuffer.parseObject(buf.get());
-
-  if (!jObject.success()) {
-    Serial.println("Gagal parse fileconfigjws");
-    return;
-  }
-
-  config.iqmhs = jObject["iqmhs"];
-  config.iqmhd = jObject["iqmhd"];
-  config.iqmha = jObject["iqmha"];
-  config.iqmhm = jObject["iqmhm"];
-  config.iqmhi = jObject["iqmhi"];
-  config.ihti = jObject["ihti"];
-  config.latitude = jObject["latitude"];
-  config.longitude = jObject["longitude"];
-  strlcpy(config.merek, jObject["merek"] | "GROBAK", sizeof(config.merek));
-  strlcpy(config.info1, jObject["info1"] | "ELEKTRON", sizeof(config.info1));
-  strlcpy(config.info2, jObject["info2"] | " MART ", sizeof(config.info2));
-
-  configFileJws.flush();
-  configFileJws.close();
-
 }
