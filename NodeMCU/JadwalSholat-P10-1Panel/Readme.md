@@ -27,6 +27,7 @@ Buzzer
 - Suhu
 - Hitung Mundur Iqomah
 - Setting Waktu lewat Wifi dengan browser
+- Setting Display tingkat kecerahan
 
 ### Pin on DMD LED P10 Panel
 
@@ -57,10 +58,10 @@ Buzzer
 | -      | GND     |
 
 ### Eksternal Library
-- DMD2 : https://github.com/freetronics/DMD2
+- HJS589(DMD3 porting for ESP8266 by Ahmad Herman) < DMD3 by Wardi Utari @ MFH Robotic (info https://www.facebook.com/MFH.Robotic/)) < DMD : https://github.com/freetronics/DMD
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
-- ArduinoJson V5 : https://github.com/bblanchon/ArduinoJson
+- ArduinoJson V6 : https://github.com/bblanchon/ArduinoJson
         
 ### Catatan : 
 - Perlu Power Eksternal 5V ke LED P10.
