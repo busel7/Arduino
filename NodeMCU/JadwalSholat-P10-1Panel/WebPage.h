@@ -183,7 +183,7 @@ char setjws[] PROGMEM = R"=====(
 </div>
 <br>
 <div>
-  <button onClick="setJws()"> Simpan & Restart </button>
+  <button onClick="setJws()"> Simpan </button>
 </div>
 </form>
 <br><br>
