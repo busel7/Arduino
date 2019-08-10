@@ -345,6 +345,8 @@ void setup() {
 
   Serial.begin(9600);
 
+  //RTC D3231
+
   int rtn = I2C_ClearBus(); // clear the I2C bus first before calling Wire.begin()
   if (rtn != 0) {
     Serial.println(F("I2C bus error. Could not clear"));
@@ -355,12 +357,25 @@ void setup() {
     } else if (rtn == 3) {
       Serial.println(F("SDA data line held low"));
     }
-  } else { // bus clear
-    // re-enable Wire
-    // now can start Wire Arduino master
+  } else { // bus clear, re-enable Wire, now can start Wire Arduino master
     Wire.begin();
   }
+  
+  Rtc.Begin();
+
+  if (!Rtc.GetIsRunning()) {
+    
+    Rtc.SetIsRunning(true);
+    
+  }
+  
+  Rtc.Enable32kHzPin(false);
+  Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
+  
   Serial.println("Setup RTC selesai");
+
+
+  //WIFI
 
   pinMode(pin_led, OUTPUT);
 
@@ -448,21 +463,7 @@ void setup() {
   server.on ( "/xml", handleXML) ;  
   
   server.begin();
-  Serial.println("HTTP server started");
-  
-  //RTC D3231
-  Rtc.Begin();
-  
-  Wire.begin(4, 5);
-
-  if (!Rtc.GetIsRunning()) {
-    
-    Rtc.SetIsRunning(true);
-    
-  }
-  
-  Rtc.Enable32kHzPin(false);
-  Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
+  Serial.println("HTTP server started");  
   
 
   //Buzzer
@@ -1771,6 +1772,8 @@ void branding() {
 
 
 
+//----------------------------------------------------------------------
+// I2C_ClearBus menghindari gagal baca RTC (nilai 00 atau 165)
 
 int I2C_ClearBus() {
   
