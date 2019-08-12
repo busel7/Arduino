@@ -5,8 +5,8 @@
 Jam Waktu Sholat menggunakan: 
 
 NodeMCU ESP8266
-- https://www.tokopedia.com/elektronmartcom/nodemcu-esp8266-v3-lua-wifi-board-cp2102
-- https://www.bukalapak.com/p/elektronik/komponen-elektronik/1fl2z9z-jual-nodemcu-esp8266-v3-lua-wifi-board-cp2102
+- https://www.tokopedia.com/elektronmartcom/nodemcu-esp8266-v3-lua-wifi-board-ch340
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/1lpt86t-jual-nodemcu-esp8266-v3-lua-wifi-board-ch340
 
 LED Panel P10
 
