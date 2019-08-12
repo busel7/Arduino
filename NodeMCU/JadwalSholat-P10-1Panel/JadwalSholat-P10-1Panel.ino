@@ -58,6 +58,7 @@ struct Config {
   int iqmha;
   int iqmhm;
   int iqmhi;
+  int durasiadzan;
   int ihti; // Koreksi Waktu Menit Jadwal Sholat
   float latitude;
   float longitude;
@@ -66,7 +67,6 @@ struct Config {
   char info2[512];
 };
 
-int iqmh;
 
 struct ConfigWifi {
   char wifissid[64];
@@ -77,7 +77,6 @@ struct ConfigDisp {
   int cerah;
 };
 
-uint32_t durasiadzan = 3000; // Durasi Adzan 1 detik = 1000 ms, 180000 berarti 180 detik atau 3 menit
 
 
 // BUZZER
@@ -181,6 +180,9 @@ void buildXML(){
     XML+="<rIqmhi>";
     XML+= config.iqmhi;
     XML+="</rIqmhi>";
+    XML+="<rDurasiAdzan>";
+    XML+= config.durasiadzan;
+    XML+="</rDurasiAdzan>";
     XML+="<rIhti>";
     XML+= config.ihti;
     XML+="</rIhti>";
@@ -296,6 +298,10 @@ void LoadDataAwal() {
 
   if (config.iqmhi == 0) {
     config.iqmhi = 5;    
+  }
+
+  if (config.durasiadzan == 0) {
+    config.durasiadzan = 1;    
   }
 
   if (config.ihti == 0) {
@@ -588,6 +594,7 @@ void loadJwsConfig(const char *fileconfigjws, Config &config) {
   config.iqmha = doc["iqmha"];
   config.iqmhm = doc["iqmhm"];
   config.iqmhi = doc["iqmhi"];
+  config.durasiadzan = doc["durasiadzan"];
   config.ihti = doc["ihti"];
   config.latitude = doc["latitude"];
   config.longitude = doc["longitude"];
@@ -820,7 +827,7 @@ void JamJatuhPulse() {
     pulse=0;
   }
 
-  if(cM - pM > 50) { 
+  if(cM - pM > 25) { 
     if(d == 0 and y < 32) {
       pM=cM;
       y++;
@@ -876,7 +883,7 @@ void JamArabJatuhPulse() {
     pulse=0;
   }
 
-  if(cM - pM > 50) { 
+  if(cM - pM > 25) { 
     if(d == 0 and y < 32) {
       pM=cM;
       y++;
@@ -1081,6 +1088,33 @@ void TampilJam() {
 
 
 
+void TampilJamKecil() {
+
+  static uint32_t pM;
+  static uint32_t pMJam;
+  uint32_t cM = millis();
+  static boolean kedip;
+  
+  RtcDateTime now = Rtc.GetDateTime();
+  char jam[3];
+  char menit[3];
+  char detik[3];
+  
+  if (cM - pMJam >= 1000) {
+   
+    pMJam = cM;
+    
+    //JAM
+    sprintf(jam,"%02d:%02d:%02d", now.Hour(), now.Minute(), now.Second());
+    Disp.setFont(Font3x5);
+    textCenter(-1,jam);
+        
+  }
+ 
+}
+
+
+
 //----------------------------------------------------------------------
 //TAMPILKAN TANGGAL
 
@@ -1263,6 +1297,7 @@ void AlarmSholat() {
   int Hor = now.Hour();
   int Min = now.Minute();
   int Sec = now.Second();
+  int adzan = config.durasiadzan * 60000;
 
   JadwalSholat();
   int hours, minutes, seconds;
@@ -1282,8 +1317,9 @@ void AlarmSholat() {
     BuzzerPendek();
     Disp.clear();
     Disp.setFont(Font3x5);
-    textCenter(5, "TANBIH");
-    delay(durasiadzan);
+    textCenter(0, "TANBIH");
+    textCenter(8, "IMSAK");
+    delay(adzan);
     Disp.clear();
 
   }
@@ -1301,8 +1337,9 @@ void AlarmSholat() {
     BuzzerPendek();
     Disp.clear();
     Disp.setFont(Font3x5);
-    textCenter(5, "SUBUH");
-    delay(durasiadzan);
+    textCenter(0, "ADZAN");
+    textCenter(8, "SUBUH");
+    delay(adzan);
     Disp.clear();
 
     tampilanutama = 1;
@@ -1321,8 +1358,9 @@ void AlarmSholat() {
     BuzzerPendek();
     Disp.clear();
     Disp.setFont(Font3x5);
-    textCenter(5, "DZUHUR");
-    delay(durasiadzan);
+    textCenter(0, "ADZAN");
+    textCenter(8, "DZUHUR");
+    delay(adzan);
     Disp.clear();
 
     tampilanutama = 1;
@@ -1331,8 +1369,9 @@ void AlarmSholat() {
     BuzzerPendek();
     Disp.clear();
     Disp.setFont(Font3x5);
-    textCenter(5, "JUM'AT");
-    delay(durasiadzan);
+    textCenter(0, "ADZAN");
+    textCenter(8, "JUM'AT");
+    delay(adzan);
 
   }
 
@@ -1349,8 +1388,9 @@ void AlarmSholat() {
     BuzzerPendek();
     Disp.clear();
     Disp.setFont(Font3x5);
-    textCenter(5, "ASHAR");
-    delay(durasiadzan);
+    textCenter(0, "ADZAN");
+    textCenter(8, "ASHAR");
+    delay(adzan);
     Disp.clear();
 
     tampilanutama = 1;
@@ -1369,8 +1409,9 @@ void AlarmSholat() {
     BuzzerPendek();
     Disp.clear();
     Disp.setFont(Font3x5);
-    textCenter(5, "MAGHRIB");
-    delay(durasiadzan);
+    textCenter(0, "ADZAN");
+    textCenter(8, "MAGHRIB");
+    delay(adzan);
     Disp.clear();
 
     tampilanutama = 1;
@@ -1389,8 +1430,9 @@ void AlarmSholat() {
     BuzzerPendek();
     Disp.clear();
     Disp.setFont(Font3x5);
-    textCenter(5, "ISYA'");
-    delay(durasiadzan);
+    textCenter(0, "ADZAN");
+    textCenter(8, "ISYA'");
+    delay(adzan);
     Disp.clear();
 
     tampilanutama = 1;
@@ -1411,12 +1453,15 @@ void Iqomah() {
   int Min = now.Minute();
   int Sec = now.Second();
 
+  
   JadwalSholat();
   int hours, minutes, seconds;
 
+  static uint8_t iqmh;
+  
   // Subuh
   get_float_time_parts(times[0], hours, minutes);
-  minutes = minutes + config.ihti;
+  minutes = minutes + config.ihti + config.durasiadzan;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -1429,7 +1474,7 @@ void Iqomah() {
 
   // Dzuhur
   get_float_time_parts(times[2], hours, minutes);
-  minutes = minutes + config.ihti;
+  minutes = minutes + config.ihti + config.durasiadzan;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -1442,7 +1487,7 @@ void Iqomah() {
 
   // Ashar
   get_float_time_parts(times[3], hours, minutes);
-  minutes = minutes + config.ihti;
+  minutes = minutes + config.ihti + config.durasiadzan;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -1455,7 +1500,7 @@ void Iqomah() {
 
   // Maghrib
   get_float_time_parts(times[5], hours, minutes);
-  minutes = minutes + config.ihti;
+  minutes = minutes + config.ihti + config.durasiadzan;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -1468,7 +1513,7 @@ void Iqomah() {
 
   // Isya'
   get_float_time_parts(times[6], hours, minutes);
-  minutes = minutes + config.ihti;
+  minutes = minutes + config.ihti + config.durasiadzan;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -1504,13 +1549,15 @@ void Iqomah() {
         tampilanutama = 0;
         return;
     }
-    
+
     if (detik == 0) {
       menit--;
       detik = 59;      
     }
     
   }
+
+  
   
   sprintf(hitungmundur, "%02d:%02d", menit, detik);
   Disp.setFont(angkasm47);
@@ -1587,6 +1634,8 @@ static char *info1[] = {config.info1};
 
 void TeksJalanInfo1() {
 
+  TampilJamKecil();
+  
   static uint32_t pM;
   static uint32_t x;
   static uint32_t Speed = 50;
@@ -1599,10 +1648,11 @@ void TeksJalanInfo1() {
       ++x;
     } else {
       x = 0;
+      Disp.clear();
       tampilanjam = 8;
       return;
     }
-    Disp.drawText(width - x, 3, info1[0]);
+    Disp.drawText(width - x, 5, info1[0]);
   }  
 
 }
@@ -1616,6 +1666,8 @@ static char *info2[] = {config.info2};
 
 void TeksJalanInfo2() {
 
+  TampilJamKecil();
+
   static uint32_t pM;
   static uint32_t x;
   static uint32_t Speed = 50;
@@ -1628,11 +1680,12 @@ void TeksJalanInfo2() {
       ++x;
     } else {
       x = 0;
+      Disp.clear();
       tampilanjam = 0;
       return;
     }
-    Disp.drawText(width - x, 3, info2[0]);
-  }  
+    Disp.drawText(width - x, 5, info2[0]);
+  }
 
 }
 
