@@ -151,8 +151,8 @@ char setjws[] PROGMEM = R"=====(
       <input id="iqmhi" placeholder="5" maxlength="2" size="3"/>
     </td>
     <td>
-      <label for="ihti">Ihtiyati</label><br>
-      <input id="ihti" placeholder="2" maxlength="2" size="3"/>
+      <label for="durasiadzan">Adzan</label><br>
+      <input id="durasiadzan" placeholder="2" maxlength="2" size="3"/>
     </td>
   </tr>
 </table>
@@ -165,6 +165,10 @@ char setjws[] PROGMEM = R"=====(
     <td>
       <label for="longitude">Longitude</label><br>
       <input id="longitude" placeholder="106.608892" size="9"/>
+    </td>
+    <td>
+      <label for="ihti">Ihtiyati</label><br>
+      <input id="ihti" placeholder="2" maxlength="2" size="3"/>
     </td>
   </tr>
 </table>
@@ -244,6 +248,10 @@ function handleServerResponse(){
    message = xmldoc[0].firstChild.nodeValue;
    document.getElementById('iqmhi').value=message;
 
+    xmldoc = xmlResponse.getElementsByTagName('rDurasiAdzan');
+   message = xmldoc[0].firstChild.nodeValue;
+   document.getElementById('durasiadzan').value=message;
+
    xmldoc = xmlResponse.getElementsByTagName('rIhti');
    message = xmldoc[0].firstChild.nodeValue;
    document.getElementById('ihti').value=message;
@@ -280,13 +288,14 @@ function setJws() {
   var iqmha = document.getElementById("iqmha").value;
   var iqmhm = document.getElementById("iqmhm").value;
   var iqmhi = document.getElementById("iqmhi").value;
+  var durasiadzan = document.getElementById("durasiadzan").value;
   var ihti = document.getElementById("ihti").value;
   var latitude = document.getElementById("latitude").value;
   var longitude = document.getElementById("longitude").value;
   var nama = document.getElementById("nama").value;
   var info1 = document.getElementById("info1").value;
   var info2 = document.getElementById("info2").value;
-  var datajws = {iqmhs:iqmhs, iqmhd:iqmhd, iqmha:iqmha, iqmhm:iqmhm, iqmhi:iqmhi, ihti:ihti, latitude:latitude, longitude:longitude, nama:nama, info1:info1, info2:info2};
+  var datajws = {iqmhs:iqmhs, iqmhd:iqmhd, iqmha:iqmha, iqmhm:iqmhm, iqmhi:iqmhi, durasiadzan:durasiadzan, ihti:ihti, latitude:latitude, longitude:longitude, nama:nama, info1:info1, info2:info2};
 
   var xhr = new XMLHttpRequest();
   var url = "/settingjws";
