@@ -1306,7 +1306,7 @@ void AlarmSholat() {
   get_float_time_parts(times[0], hours, minutes);
   minutes = minutes + config.ihti;
 
-  if (minutes < 11) {
+  if (minutes < 10) {
     minutes = 60 - minutes;
     hours --;
   } else {
@@ -1452,7 +1452,15 @@ void Iqomah() {
   int Hor = now.Hour();
   int Min = now.Minute();
   int Sec = now.Second();
+  int durasiadzan = config.durasiadzan;
 
+
+  if (Min < durasiadzan) {
+    Min = 60 - durasiadzan;
+    Hor --;
+  } else {
+    Min = Min - durasiadzan;
+  }
   
   JadwalSholat();
   int hours, minutes, seconds;
@@ -1461,7 +1469,7 @@ void Iqomah() {
   
   // Subuh
   get_float_time_parts(times[0], hours, minutes);
-  minutes = minutes + config.ihti + config.durasiadzan;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -1474,20 +1482,20 @@ void Iqomah() {
 
   // Dzuhur
   get_float_time_parts(times[2], hours, minutes);
-  minutes = minutes + config.ihti + config.durasiadzan;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
     hours ++;
   }
-
-  if (Hor == hours && Min == minutes && Hari != 5) {
+  Serial.print("Min : ");Serial.println(Min);
+  if (Hor == hours && Min == minutes) {
     iqmh = config.iqmhd;
   }
 
   // Ashar
   get_float_time_parts(times[3], hours, minutes);
-  minutes = minutes + config.ihti + config.durasiadzan;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -1500,7 +1508,7 @@ void Iqomah() {
 
   // Maghrib
   get_float_time_parts(times[5], hours, minutes);
-  minutes = minutes + config.ihti + config.durasiadzan;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
@@ -1513,7 +1521,7 @@ void Iqomah() {
 
   // Isya'
   get_float_time_parts(times[6], hours, minutes);
-  minutes = minutes + config.ihti + config.durasiadzan;
+  minutes = minutes + config.ihti;
 
   if (minutes >= 60) {
     minutes = minutes - 60;
