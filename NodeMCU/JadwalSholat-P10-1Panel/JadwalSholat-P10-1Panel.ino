@@ -67,6 +67,9 @@ struct Config {
   char info2[512];
 };
 
+uint8_t iqmh;
+uint8_t menitiqmh;
+uint8_t detikiqmh = 59;
 
 struct ConfigWifi {
   char wifissid[64];
@@ -1341,7 +1344,8 @@ void AlarmSholat() {
     textCenter(8, "SUBUH");
     delay(adzan);
     Disp.clear();
-
+    iqmh = config.iqmhs;
+    menitiqmh = iqmh - 1;
     tampilanutama = 1;
   }
 
@@ -1362,7 +1366,8 @@ void AlarmSholat() {
     textCenter(8, "DZUHUR");
     delay(adzan);
     Disp.clear();
-
+    iqmh = config.iqmhd;
+    menitiqmh = iqmh - 1;
     tampilanutama = 1;
 
   } else if (Hor == hours && Min == minutes && Hari == 5) {
@@ -1392,7 +1397,8 @@ void AlarmSholat() {
     textCenter(8, "ASHAR");
     delay(adzan);
     Disp.clear();
-
+    iqmh = config.iqmha;
+    menitiqmh = iqmh - 1;
     tampilanutama = 1;
   }
 
@@ -1413,7 +1419,8 @@ void AlarmSholat() {
     textCenter(8, "MAGHRIB");
     delay(adzan);
     Disp.clear();
-
+    iqmh = config.iqmhm;
+    menitiqmh = iqmh - 1;
     tampilanutama = 1;
   }
 
@@ -1434,7 +1441,8 @@ void AlarmSholat() {
     textCenter(8, "ISYA'");
     delay(adzan);
     Disp.clear();
-
+    iqmh = config.iqmhi;
+    menitiqmh = iqmh - 1;
     tampilanutama = 1;
   }
 
@@ -1446,96 +1454,6 @@ void AlarmSholat() {
 
 void Iqomah() {  
 
-  RtcDateTime now = Rtc.GetDateTime();
-
-  int Hari = now.DayOfWeek();
-  int Hor = now.Hour();
-  int Min = now.Minute();
-  int Sec = now.Second();
-  int durasiadzan = config.durasiadzan;
-
-
-  if (Min < durasiadzan) {
-    Min = 60 - durasiadzan;
-    Hor --;
-  } else {
-    Min = Min - durasiadzan;
-  }
-  
-  JadwalSholat();
-  int hours, minutes, seconds;
-
-  static uint8_t iqmh;
-  
-  // Subuh
-  get_float_time_parts(times[0], hours, minutes);
-  minutes = minutes + config.ihti;
-
-  if (minutes >= 60) {
-    minutes = minutes - 60;
-    hours ++;
-  }
-
-  if (Hor == hours && Min == minutes) {
-    iqmh = config.iqmhs;
-  }
-
-  // Dzuhur
-  get_float_time_parts(times[2], hours, minutes);
-  minutes = minutes + config.ihti;
-
-  if (minutes >= 60) {
-    minutes = minutes - 60;
-    hours ++;
-  }
-  
-  if (Hor == hours && Min == minutes) {
-    iqmh = config.iqmhd;
-  }
-
-  // Ashar
-  get_float_time_parts(times[3], hours, minutes);
-  minutes = minutes + config.ihti;
-
-  if (minutes >= 60) {
-    minutes = minutes - 60;
-    hours ++;
-  }
-
-  if (Hor == hours && Min == minutes) {
-    iqmh = config.iqmha;
-  }
-
-  // Maghrib
-  get_float_time_parts(times[5], hours, minutes);
-  minutes = minutes + config.ihti;
-
-  if (minutes >= 60) {
-    minutes = minutes - 60;
-    hours ++;
-  }
-
-  if (Hor == hours && Min == minutes) {
-    iqmh = config.iqmhm;
-  }
-
-  // Isya'
-  get_float_time_parts(times[6], hours, minutes);
-  minutes = minutes + config.ihti;
-
-  if (minutes >= 60) {
-    minutes = minutes - 60;
-    hours ++;
-  }
-
-  if (Hor == hours && Min == minutes) {
-    iqmh = config.iqmhi;
-  }
-
-
-
-  static uint8_t menit = iqmh - 1;
-  static uint8_t detik = 59;
   static uint32_t pMIqmh;
   uint32_t cM = millis();
   static char hitungmundur[6];
@@ -1544,32 +1462,30 @@ void Iqomah() {
   textCenter(0, "IQOMAH");
 
   if(cM - pMIqmh > 1000) {
-    pMIqmh = cM;
-    detik--;
     
-    if (menit == 0 && detik == 0){
+    pMIqmh = cM;    
+    detikiqmh--;
+    
+    if (menitiqmh == 0 && detikiqmh == 0){
         Disp.clear();
         textCenter(0, "LURUS 8");
         textCenter(9, "RAPAT");
         BuzzerPanjang();
-        detik = 59;
+        detikiqmh = 59;
         Disp.clear();
         tampilanutama = 0;
-        return;
     }
 
-    if (detik == 0) {
-      menit--;
-      detik = 59;      
+    if (detikiqmh == 0) {
+      menitiqmh--;
+      detikiqmh = 59;      
     }
     
   }
 
-  
-  
-  sprintf(hitungmundur, "%02d:%02d", menit, detik);
+  sprintf(hitungmundur, "%02d:%02d", menitiqmh, detikiqmh);
   Disp.setFont(angkasm47);
-  textCenter(8, hitungmundur);
+  textCenter(8, hitungmundur);  
   
 }
 
