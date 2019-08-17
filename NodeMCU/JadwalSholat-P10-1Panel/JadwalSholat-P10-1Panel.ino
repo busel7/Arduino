@@ -1488,7 +1488,7 @@ void Iqomah() {
     minutes = minutes - 60;
     hours ++;
   }
-  Serial.print("Min : ");Serial.println(Min);
+  
   if (Hor == hours && Min == minutes) {
     iqmh = config.iqmhd;
   }
