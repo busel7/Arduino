@@ -165,6 +165,12 @@ char setjws[] PROGMEM = R"=====(
     <td>
       <label for="longitude">Longitude</label><br>
       <input id="longitude" placeholder="106.608892" size="9"/>
+    </td>    
+  </tr>
+  <tr>
+    <td>
+      <label for="zonawaktu">Zona Waktu</label><br>
+      <input id="zonawaktu" placeholder="7" size="3"/>
     </td>
     <td>
       <label for="ihti">Ihtiyati</label><br>
@@ -264,6 +270,10 @@ function handleServerResponse(){
    message = xmldoc[0].firstChild.nodeValue;
    document.getElementById('longitude').value=message;
 
+   xmldoc = xmlResponse.getElementsByTagName('rZonaWaktu');
+   message = xmldoc[0].firstChild.nodeValue;
+   document.getElementById('zonawaktu').value=message;
+
    xmldoc = xmlResponse.getElementsByTagName('rNama');
    message = xmldoc[0].firstChild.nodeValue;
    document.getElementById('nama').value=message;
@@ -292,10 +302,11 @@ function setJws() {
   var ihti = document.getElementById("ihti").value;
   var latitude = document.getElementById("latitude").value;
   var longitude = document.getElementById("longitude").value;
+  var zonawaktu = document.getElementById("zonawaktu").value;
   var nama = document.getElementById("nama").value;
   var info1 = document.getElementById("info1").value;
   var info2 = document.getElementById("info2").value;
-  var datajws = {iqmhs:iqmhs, iqmhd:iqmhd, iqmha:iqmha, iqmhm:iqmhm, iqmhi:iqmhi, durasiadzan:durasiadzan, ihti:ihti, latitude:latitude, longitude:longitude, nama:nama, info1:info1, info2:info2};
+  var datajws = {iqmhs:iqmhs, iqmhd:iqmhd, iqmha:iqmha, iqmhm:iqmhm, iqmhi:iqmhi, durasiadzan:durasiadzan, ihti:ihti, latitude:latitude, longitude:longitude, zonawaktu:zonawaktu, nama:nama, info1:info1, info2:info2};
 
   var xhr = new XMLHttpRequest();
   var url = "/settingjws";
