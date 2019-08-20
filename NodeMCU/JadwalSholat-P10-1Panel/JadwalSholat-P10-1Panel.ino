@@ -62,14 +62,15 @@ struct Config {
   int ihti; // Koreksi Waktu Menit Jadwal Sholat
   float latitude;
   float longitude;
+  int zonawaktu;
   char nama[64];
   char info1[512];
   char info2[512];
 };
 
-uint8_t iqmh;
-uint8_t menitiqmh;
-uint8_t detikiqmh = 59;
+int iqmh;
+int menitiqmh;
+int detikiqmh = 60;
 
 struct ConfigWifi {
   char wifissid[64];
@@ -195,6 +196,9 @@ void buildXML(){
     XML+="<rLongitude>";
     XML+= config.longitude;
     XML+="</rLongitude>";
+    XML+="<rZonaWaktu>";
+    XML+= config.zonawaktu;
+    XML+="</rZonaWaktu>";
     XML+="<rNama>";
     XML+= config.nama;
     XML+="</rNama>";
@@ -317,6 +321,10 @@ void LoadDataAwal() {
 
   if (config.longitude == 0) {
     config.longitude = 106.61;    
+  }
+
+  if (config.zonawaktu == 0) {
+    config.zonawaktu = 7;    
   }
 
   if (strlen(config.nama) == 0) {
@@ -601,6 +609,7 @@ void loadJwsConfig(const char *fileconfigjws, Config &config) {
   config.ihti = doc["ihti"];
   config.latitude = doc["latitude"];
   config.longitude = doc["longitude"];
+  config.zonawaktu = doc["zonawaktu"];
   strlcpy(config.nama, doc["nama"] | "MASJID AL KAUTSAR", sizeof(config.nama));  // Set awal Nama
   strlcpy(config.info1, doc["info1"] | "www.grobak.net", sizeof(config.info1));  // Set awal Info1 
   strlcpy(config.info2, doc["info2"] | "www.elektronmart.com", sizeof(config.info2));  // Set awal Info2
@@ -1198,20 +1207,14 @@ void JadwalSholat() {
   int tahun = now.Year();
   int bulan = now.Month();
   int tanggal = now.Day();
-
-  int dst=7; // TimeZone
   
   set_calc_method(Karachi);
   set_asr_method(Shafii);
   set_high_lats_adjust_method(AngleBased);
   set_fajr_angle(20);
-  set_isha_angle(18);
-  
-  //SETTING LOKASI DAN WAKTU Masjid Miftahul Jannah
-  float latitude=-6.165010;
-  float longitude=106.608892;
+  set_isha_angle(18);  
 
-  get_prayer_times(tahun, bulan, tanggal, latitude, longitude, dst, times);
+  get_prayer_times(tahun, bulan, tanggal, config.latitude, config.longitude, config.zonawaktu, times);
 
 }
 
@@ -1457,11 +1460,15 @@ void Iqomah() {
   static uint32_t pMIqmh;
   uint32_t cM = millis();
   static char hitungmundur[6];
-  
+
   Disp.setFont(Font3x5);
   textCenter(0, "IQOMAH");
 
-  if(cM - pMIqmh > 1000) {
+  if (detikiqmh == 60) {
+    detikiqmh = 0;
+  }  
+
+  if(cM - pMIqmh >= 1000) {
     
     pMIqmh = cM;    
     detikiqmh--;
@@ -1476,9 +1483,9 @@ void Iqomah() {
         tampilanutama = 0;
     }
 
-    if (detikiqmh == 0) {
-      menitiqmh--;
-      detikiqmh = 59;      
+    if (detikiqmh < 0) {
+      detikiqmh = 59;
+      menitiqmh--;            
     }
     
   }
