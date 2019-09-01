@@ -4,6 +4,10 @@
 
 Jam Waktu Sholat menggunakan: 
 
+PCB ElektronMart JWSNodeMCUP10 Board v1.0
+- https://www.tokopedia.com/elektronmartcom/pcb-jws-nodemcu-board-1-0-elektronmart-led-p10-arduino
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/22rye9a-jual-pcb-jws-nodemcu-board-1-0-elektronmart-led-p10-arduino
+
 NodeMCU ESP8266
 - https://www.tokopedia.com/elektronmartcom/nodemcu-esp8266-v3-lua-wifi-board-ch340
 - https://www.bukalapak.com/p/elektronik/komponen-elektronik/1lpt86t-jual-nodemcu-esp8266-v3-lua-wifi-board-ch340
