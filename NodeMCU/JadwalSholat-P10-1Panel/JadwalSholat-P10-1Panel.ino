@@ -24,6 +24,8 @@ Eksternal Library
 - ArduinoJson V6 : https://github.com/bblanchon/ArduinoJson
 
 email : bonny@grobak.net - www.grobak.net - www.elektronmart.com
+
+Updated : 7 September 2019
 */
 
 
@@ -38,11 +40,12 @@ RtcDS3231<TwoWire> Rtc(Wire);
 
 #include <HJS589.h>
 #include <fonts/Arial_Black_16.h>
-#include <fonts/angka6x13.h>
-#include <fonts/Font3x5.h>
-#include <fonts/angkasm47.h>
-#include <fonts/Britannic.h>
-#include <fonts/arab6x13.h>
+
+#include <fonts/ElektronMart6x8.h>
+#include <fonts/ElektronMart6x16.h>
+#include <fonts/ElektronMart5x6.h>
+#include <fonts/ElektronMartArabic6x16.h>
+#include <fonts/ElektronMartArabic5x6.h>
 
 #include "PrayerTimes.h"
 #include "WebPage.h"
@@ -108,7 +111,7 @@ HJS589 Disp(DISPLAYS_WIDE, DISPLAYS_HIGH);  // Jumlah Panel P10 yang digunakan (
 //WEB Server
 ESP8266WebServer server(80);
 
-const char* password = "grobaknet";
+const char* password = "elektronmart";
 const char* mySsid = "JWSP10"; //kalau gagal konek
 
 IPAddress local_ip(192, 168, 4, 1);
@@ -855,11 +858,11 @@ void JamJatuhPulse() {
   }
   
   if(y == 32) {
-    Disp.drawRect(17,3+pulse,20,11-pulse,0,1);       
+    Disp.drawRect(15,3+pulse,18,11-pulse,0,1);       
   }
   
   if(y < 32) {
-    Disp.drawRect(17,3,20,11,0,0);
+    Disp.drawRect(15,3,18,11,0,0);
   }
    
   if(y == 0 and d == 1) {
@@ -1002,16 +1005,16 @@ void TampilJamDinamis(uint32_t y) {
   sprintf(detik,"%02d", now.Second());
 
   //JAM
-  Disp.setFont(angka6x13);
-  Disp.drawText(3, y, jam);
+  Disp.setFont(ElektronMart6x16);
+  Disp.drawText(1, y, jam);
 
   //MENIT          
-  Disp.setFont(Font3x5);
-  Disp.drawText(22, y, menit);
+  Disp.setFont(ElektronMart5x6);
+  Disp.drawText(20, y, menit);
 
   //DETIK          
-  Disp.setFont(Font3x5);
-  Disp.drawText(22, y+8, detik);
+  Disp.setFont(ElektronMart5x6);
+  Disp.drawText(20, y+8, detik);
 
  
 }
@@ -1022,16 +1025,22 @@ void TampilJamArabDinamis(uint32_t y) {
   RtcDateTime now = Rtc.GetDateTime();
   char jam[3];
   char menit[3];
+  char detik[3];
   sprintf(jam,"%02d", now.Hour());
   sprintf(menit,"%02d", now.Minute());
+  sprintf(detik,"%02d", now.Second());
 
   //JAM
-  Disp.setFont(arab6x13);
+  Disp.setFont(ElektronMartArabic6x16);
   Disp.drawText(0, y, jam);
 
   //MENIT          
-  Disp.setFont(arab6x13);
-  Disp.drawText(19, y, menit);
+  Disp.setFont(ElektronMartArabic5x6);
+  Disp.drawText(20, y, menit);
+
+  //DETIK          
+  Disp.setFont(ElektronMartArabic5x6);
+  Disp.drawText(20, y+8, detik);
  
 }
 
@@ -1061,17 +1070,17 @@ void TampilJam() {
     
     //JAM
     sprintf(jam,"%02d", now.Hour());
-    Disp.setFont(angka6x13);
+    Disp.setFont(ElektronMart6x16);
     Disp.drawText(3, 0, jam);
   
     //MENIT
     sprintf(menit,"%02d", now.Minute());
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     Disp.drawText(22, 0, menit);
   
     //DETIK
     sprintf(detik,"%02d", now.Second());
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     Disp.drawText(22, 8, detik);
 
     if (d >= 10) {
@@ -1110,16 +1119,17 @@ void TampilJamKecil() {
   RtcDateTime now = Rtc.GetDateTime();
   char jam[3];
   char menit[3];
-  char detik[3];
+  //char detik[3];
   
   if (cM - pMJam >= 1000) {
    
     pMJam = cM;
     
     //JAM
-    sprintf(jam,"%02d:%02d:%02d", now.Hour(), now.Minute(), now.Second());
-    Disp.setFont(Font3x5);
-    textCenter(-1,jam);
+    //sprintf(jam,"%02d:%02d:%02d", now.Hour(), now.Minute(), now.Second());
+    sprintf(jam,"%02d:%02d", now.Hour(), now.Minute());
+    Disp.setFont(ElektronMart5x6);
+    textCenter(0,jam);
         
   }
  
@@ -1147,9 +1157,9 @@ void TampilTanggal() {
     sprintf(hari, "%s", weekDay[now.DayOfWeek()]);
     sprintf(tanggal, "%02d %s", now.Day(), monthYear[now.Month()]);  
     
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0,hari);;
-    textCenter(9,tanggal);
+    textCenter(8,tanggal);
 
     if (d >= 2) {
       d = 0;
@@ -1180,10 +1190,10 @@ void TampilSuhu(){
     pM = cM;
     d++;
   
-    Disp.setFont(Font3x5);    
+    Disp.setFont(ElektronMart5x6);    
     textCenter(0, "SUHU");
-    sprintf(suhu,"%dC",celsius - koreksisuhu);
-    Disp.setFont(angkasm47);
+    sprintf(suhu,"%dC*",celsius - koreksisuhu);
+    Disp.setFont(ElektronMart6x8);
     textCenter(8, suhu);
 
     if (d >= 2) {
@@ -1256,9 +1266,9 @@ void TampilJadwalSholat() {
     String sholat = TimeName[i];
     sprintf(jam,"%02d:%02d", hours, minutes);     
     
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0,sholat);
-    Disp.setFont(angkasm47);
+    Disp.setFont(ElektronMart6x8);
     textCenter(8,jam);
     
     i++;    
@@ -1273,9 +1283,10 @@ void TampilJadwalSholat() {
         minutes = minutes - 10 ;
       }
       sprintf(jam,"%02d:%02d", hours, minutes);
-      Disp.setFont(Font3x5);
+      Disp.clear();
+      Disp.setFont(ElektronMart5x6);
       textCenter(0,"TANBIH");
-      Disp.setFont(angkasm47);
+      Disp.setFont(ElektronMart6x8);
       textCenter(8,jam);
       
       if (i > 8) {
@@ -1322,7 +1333,7 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0, "TANBIH");
     textCenter(8, "IMSAK");
     delay(adzan);
@@ -1342,7 +1353,7 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0, "ADZAN");
     textCenter(8, "SUBUH");
     delay(adzan);
@@ -1364,7 +1375,7 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes && Hari != 5) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0, "ADZAN");
     textCenter(8, "DZUHUR");
     delay(adzan);
@@ -1376,7 +1387,7 @@ void AlarmSholat() {
   } else if (Hor == hours && Min == minutes && Hari == 5) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0, "ADZAN");
     textCenter(8, "JUM'AT");
     delay(adzan);
@@ -1395,7 +1406,7 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0, "ADZAN");
     textCenter(8, "ASHAR");
     delay(adzan);
@@ -1417,7 +1428,7 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0, "ADZAN");
     textCenter(8, "MAGHRIB");
     delay(adzan);
@@ -1439,7 +1450,7 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(Font3x5);
+    Disp.setFont(ElektronMart5x6);
     textCenter(0, "ADZAN");
     textCenter(8, "ISYA'");
     delay(adzan);
@@ -1461,7 +1472,7 @@ void Iqomah() {
   uint32_t cM = millis();
   static char hitungmundur[6];
 
-  Disp.setFont(Font3x5);
+  Disp.setFont(ElektronMart5x6);
   textCenter(0, "IQOMAH");
 
   if (detikiqmh == 60) {
@@ -1491,7 +1502,7 @@ void Iqomah() {
   }
 
   sprintf(hitungmundur, "%02d:%02d", menitiqmh, detikiqmh);
-  Disp.setFont(angkasm47);
+  Disp.setFont(ElektronMart6x8);
   textCenter(8, hitungmundur);  
   
 }
@@ -1540,7 +1551,7 @@ void TeksJalanNama() {
   static uint32_t x;
   static uint32_t Speed = 50;
   int width = Disp.width();
-  Disp.setFont(Britannic);
+  Disp.setFont(ElektronMart6x8);
   int fullScroll = Disp.textWidth(nama[0]) + width;
   if((millis() - pM) > Speed) { 
     pM = millis();
@@ -1551,7 +1562,7 @@ void TeksJalanNama() {
       tampilanjam = 7;
       return;
     }
-    Disp.drawText(width - x, 3, nama[0]);
+    Disp.drawText(width - x, 4, nama[0]);
   }  
 
 }
@@ -1571,7 +1582,7 @@ void TeksJalanInfo1() {
   static uint32_t x;
   static uint32_t Speed = 50;
   int width = Disp.width();
-  Disp.setFont(Britannic);
+  Disp.setFont(ElektronMart6x8);
   int fullScroll = Disp.textWidth(info1[0]) + width;
   if((millis() - pM) > Speed) { 
     pM = millis();
@@ -1583,7 +1594,7 @@ void TeksJalanInfo1() {
       tampilanjam = 8;
       return;
     }
-    Disp.drawText(width - x, 5, info1[0]);
+    Disp.drawText(width - x, 8, info1[0]);
   }  
 
 }
@@ -1603,7 +1614,7 @@ void TeksJalanInfo2() {
   static uint32_t x;
   static uint32_t Speed = 50;
   int width = Disp.width();
-  Disp.setFont(Britannic);
+  Disp.setFont(ElektronMart6x8);
   int fullScroll = Disp.textWidth(info2[0]) + width;
   if((millis() - pM) > Speed) { 
     pM = millis();
@@ -1615,7 +1626,7 @@ void TeksJalanInfo2() {
       tampilanjam = 0;
       return;
     }
-    Disp.drawText(width - x, 5, info2[0]);
+    Disp.drawText(width - x, 8, info2[0]);
   }
 
 }
@@ -1736,9 +1747,9 @@ void toggleLED() {
 void branding() {
   
   Disp.clear();
-  Disp.setFont(Font3x5); 
+  Disp.setFont(ElektronMart5x6); 
   Disp.drawText(4,0, "GROBAK");
-  Disp.drawText(2,9, ".NET");
+  Disp.drawText(2,7, ".NET");
   delay(1000);
 
   Disp.clear();
@@ -1747,8 +1758,8 @@ void branding() {
   delay(1000);
 
   Disp.clear();
-  Disp.setFont(Font3x5); 
-  textCenter(3, "VER.2");
+  Disp.setFont(ElektronMart5x6); 
+  textCenter(3, "VER.3");
   delay(1000);
   Disp.clear();
   
