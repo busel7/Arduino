@@ -2,6 +2,8 @@
 
 ## LED JWS - Jam Waktu Sholat
 
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/https://youtu.be/M4p0XktM3mg/0.jpg)](https://www.youtube.com/watch?v=https://youtu.be/M4p0XktM3mg)
+
 Jam Waktu Sholat menggunakan: 
 
 PCB ElektronMart JWSNodeMCUP10 Board v1.0
@@ -21,6 +23,10 @@ RTC DS3231
 Buzzer
 - https://www.bukalapak.com/p/elektronik/komponen-elektronik/1fo3u1t-jual-piezo-active-buzzer-5v
 - https://www.tokopedia.com/elektronmartcom/piezo-active-buzzer-5v
+
+PCB
+- https://www.tokopedia.com/elektronmartcom/pcb-jws-nodemcu-board-1-0-elektronmart-led-p10-arduino
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/22rye9a-jual-pcb-jws-nodemcu-board-1-0-elektronmart-led-p10-arduino
 
 ### FITUR
 
@@ -66,7 +72,14 @@ Buzzer
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
 - ArduinoJson V6 : https://github.com/bblanchon/ArduinoJson
-        
+
+### Setting Jam dan Waktu Sholat
+1. Sambungkan Wifi Handphone atau Laptop ke SSID : JWSP10
+2. Dengan Password : elektronmart
+3. Buka browser misalnya Chrome
+4. Masukkan alamat http://192.168.4.1
+
+
 ### Catatan : 
 - Perlu Power Eksternal 5V ke LED P10.
 - Saat Flashing (upload program) cabut sementara pin untuk buzzer.
