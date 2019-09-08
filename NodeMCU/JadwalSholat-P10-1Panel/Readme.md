@@ -25,10 +25,6 @@ Buzzer
 - https://www.bukalapak.com/p/elektronik/komponen-elektronik/1fo3u1t-jual-piezo-active-buzzer-5v
 - https://www.tokopedia.com/elektronmartcom/piezo-active-buzzer-5v
 
-PCB
-- https://www.tokopedia.com/elektronmartcom/pcb-jws-nodemcu-board-1-0-elektronmart-led-p10-arduino
-- https://www.bukalapak.com/p/elektronik/komponen-elektronik/22rye9a-jual-pcb-jws-nodemcu-board-1-0-elektronmart-led-p10-arduino
-
 ### FITUR
 
 - Jam Besar
