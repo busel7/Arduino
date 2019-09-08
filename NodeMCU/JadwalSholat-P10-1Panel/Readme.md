@@ -2,7 +2,7 @@
 
 ## LED JWS - Jam Waktu Sholat
 
-[![IMAGE ALT TEXT HERE](https://youtu.be/M4p0XktM3mg/0.jpg)](https://www.youtube.com/watch?v=https://youtu.be/M4p0XktM3mg)
+[![JWSP10 NodeMCU ESP8266](https://i9.ytimg.com/vi/M4p0XktM3mg/hqdefault.jpg)](https://www.youtube.com/watch?v=https://youtu.be/M4p0XktM3mg)
 
 Jam Waktu Sholat menggunakan: 
 
