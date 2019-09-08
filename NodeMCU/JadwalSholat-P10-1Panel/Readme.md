@@ -2,7 +2,7 @@
 
 ## LED JWS - Jam Waktu Sholat
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/https://youtu.be/M4p0XktM3mg/0.jpg)](https://www.youtube.com/watch?v=https://youtu.be/M4p0XktM3mg)
+[![IMAGE ALT TEXT HERE](https://youtu.be/M4p0XktM3mg/0.jpg)](https://www.youtube.com/watch?v=https://youtu.be/M4p0XktM3mg)
 
 Jam Waktu Sholat menggunakan: 
 
