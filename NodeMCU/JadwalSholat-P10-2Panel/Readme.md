@@ -2,8 +2,8 @@
 
 ## LED JWS - Jam Waktu Sholat
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=M4p0XktM3mg" target="_blank"><img src="http://img.youtube.com/vi/M4p0XktM3mg/0.jpg" 
-alt="JWSP10 NodeMCU ESP8266" width="240" height="180" border="10" /></a>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=HxDZwUOh890" target="_blank"><img src="http://img.youtube.com/vi/HxDZwUOh890/0.jpg" 
+alt="Jam Waktu Sholat JWS 2 Panel LED Clock Prayer Times NodeMCU ESP8266 DMD P10 Arduino Web Config V3" width="240" height="180" border="10" /></a>
 
 Jam Waktu Sholat menggunakan: 
 
