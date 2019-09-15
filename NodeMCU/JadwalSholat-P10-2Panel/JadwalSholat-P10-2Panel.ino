@@ -25,7 +25,7 @@ Eksternal Library
 
 email : bonny@grobak.net - www.grobak.net - www.elektronmart.com
 
-Updated : 14 September 2019
+Updated : 15 September 2019
 */
 
 
@@ -64,7 +64,10 @@ struct Config {
   int ihti; // Koreksi Waktu Menit Jadwal Sholat
   float latitude;
   float longitude;
-  int zonawaktu;
+  int zonawaktu;  
+};
+
+struct ConfigInfo {
   char nama[64];
   char info1[512];
   char info2[512];
@@ -123,6 +126,9 @@ ConfigDisp configdisp;
 
 const char *fileconfigjws = "/configjws.json";
 Config config;
+
+const char *fileconfiginfo = "/configinfo.json";
+ConfigInfo configinfo;
 
 const char *fileconfigwifi = "/configwifi.json";
 ConfigWifi configwifi;
@@ -202,13 +208,13 @@ void buildXML(){
     XML+= config.zonawaktu;
     XML+="</rZonaWaktu>";
     XML+="<rNama>";
-    XML+= config.nama;
+    XML+= configinfo.nama;
     XML+="</rNama>";
     XML+="<rInfo1>";
-    XML+= config.info1;
+    XML+= configinfo.info1;
     XML+="</rInfo1>";
     XML+="<rInfo2>";
-    XML+= config.info2;
+    XML+= configinfo.info2;
     XML+="</rInfo2>";
     XML+="<rCerah>";
     XML+= configdisp.cerah;
@@ -329,16 +335,16 @@ void LoadDataAwal() {
     config.zonawaktu = 7;    
   }
 
-  if (strlen(config.nama) == 0) {
-    strlcpy(config.nama, "MASJID AL KAUTSAR", sizeof(config.nama));
+  if (strlen(configinfo.nama) == 0) {
+    strlcpy(configinfo.nama, "MASJID AL KAUTSAR", sizeof(configinfo.nama));
   }
 
-  if (strlen(config.info1) == 0) {
-    strlcpy(config.info1, "www.grobak.net", sizeof(config.info1));
+  if (strlen(configinfo.info1) == 0) {
+    strlcpy(configinfo.info1, "www.grobak.net", sizeof(configinfo.info1));
   }
 
-  if (strlen(config.info2) == 0) {
-    strlcpy(config.info2, "www.elektronmart.com", sizeof(config.info2));
+  if (strlen(configinfo.info2) == 0) {
+    strlcpy(configinfo.info2, "www.elektronmart.com", sizeof(configinfo.info2));
   }
 
   if (strlen(configwifi.wifissid) == 0) {
@@ -407,6 +413,7 @@ void setup() {
   
   loadWifiConfig(fileconfigwifi, configwifi);
   loadJwsConfig(fileconfigjws, config);
+  loadInfoConfig(fileconfiginfo, configinfo);
   loadDispConfig(fileconfigdisp, configdisp);
 
   LoadDataAwal();
@@ -477,6 +484,12 @@ void setup() {
   });
   
   server.on("/settingjws", HTTP_POST, handleSettingJwsUpdate);
+
+  server.on("/setinfo", []() {
+    server.send_P(200, "text/html", setinfo);
+  });
+  
+  server.on("/settinginfo", HTTP_POST, handleSettingInfoUpdate);
 
   server.on("/setdisplay", []() {
     server.send_P(200, "text/html", setdisplay);
@@ -614,9 +627,6 @@ void loadJwsConfig(const char *fileconfigjws, Config &config) {
   config.latitude = doc["latitude"];
   config.longitude = doc["longitude"];
   config.zonawaktu = doc["zonawaktu"];
-  strlcpy(config.nama, doc["nama"] | "MASJID AL KAUTSAR", sizeof(config.nama));  // Set awal Nama
-  strlcpy(config.info1, doc["info1"] | "www.grobak.net", sizeof(config.info1));  // Set awal Info1 
-  strlcpy(config.info2, doc["info2"] | "www.elektronmart.com", sizeof(config.info2));  // Set awal Info2
 
   configFileJws.close();
 
@@ -656,6 +666,80 @@ void handleSettingJwsUpdate() {
     server.send(200, "application/json", "{\"status\":\"ok\"}");    
     
     loadJwsConfig(fileconfigjws, config);
+    
+    delay(500);
+    timer0_attachInterrupt(refresh);
+    timer0_write(ESP.getCycleCount() + 40000);
+  
+  }  
+
+}
+
+
+
+void loadInfoConfig(const char *fileconfiginfo, ConfigInfo &configinfo) {
+
+  File configFileInfo = SPIFFS.open(fileconfiginfo, "r");
+  
+  if (!configFileInfo) {
+    Serial.println("Gagal membuka fileconfiginfo untuk dibaca");
+    return;
+  }
+
+  size_t size = configFileInfo.size();
+  std::unique_ptr<char[]> buf(new char[size]);
+  configFileInfo.readBytes(buf.get(), size);
+
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, buf.get());
+
+  if (error) {
+    Serial.println("Gagal parse fileconfiginfo");
+    return;
+  }
+
+  strlcpy(configinfo.nama, doc["nama"] | "MASJID AL KAUTSAR", sizeof(configinfo.nama));  // Set awal Nama
+  strlcpy(configinfo.info1, doc["info1"] | "www.grobak.net", sizeof(configinfo.info1));  // Set awal Info1 
+  strlcpy(configinfo.info2, doc["info2"] | "www.elektronmart.com", sizeof(configinfo.info2));  // Set awal Info2
+
+  configFileInfo.close();
+
+}
+
+
+
+void handleSettingInfoUpdate() {
+
+  timer0_detachInterrupt();
+
+  String datainfo = server.arg("plain");
+  
+  DynamicJsonDocument doc(1024);
+  DeserializationError error = deserializeJson(doc, datainfo);
+
+  File configFileInfo = SPIFFS.open(fileconfiginfo, "w");
+  
+  if (!configFileInfo) {
+    Serial.println("Gagal membuka Info configFile untuk ditulis");
+    return;
+  }
+  
+  serializeJson(doc, configFileInfo);
+
+  if (error) {
+    
+    Serial.print(F("deserializeJson() gagal kode sebagai berikut: "));
+    Serial.println(error.c_str());
+    return;
+    
+  } else {
+    
+    configFileInfo.close();
+    Serial.println("Berhasil mengubah configFileInfo");
+    
+    server.send(200, "application/json", "{\"status\":\"ok\"}");    
+    
+    loadInfoConfig(fileconfiginfo, configinfo);
     
     delay(500);
     timer0_attachInterrupt(refresh);
@@ -1435,7 +1519,7 @@ void BuzzerPendek() {
 //-------------------------------------------------------
 // TAMPILKAN SCROLLING TEKS NAMA
 
-static char *nama[] = {config.nama};
+static char *nama[] = {configinfo.nama};
 
 void TeksJalanNama() {
 
@@ -1466,7 +1550,7 @@ void TeksJalanNama() {
 //-------------------------------------------------------
 // TAMPILKAN SCROLLING TEKS INFO1
 
-static char *info1[] = {config.info1};
+static char *info1[] = {configinfo.info1};
 
 void TeksJalanInfo1() {
 
@@ -1497,7 +1581,7 @@ void TeksJalanInfo1() {
 //-------------------------------------------------------
 // TAMPILKAN SCROLLING TEKS INFO2
 
-static char *info2[] = {config.info2};
+static char *info2[] = {configinfo.info2};
 
 void TeksJalanInfo2() {
 
