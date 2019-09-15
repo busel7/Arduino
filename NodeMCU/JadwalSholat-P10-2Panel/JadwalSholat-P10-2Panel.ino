@@ -1308,7 +1308,7 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(ElektronMart5x6);
+    Disp.setFont(ElektronMart6x8);
     textCenter(0, "TANBIH");
     textCenter(8, "IMSAK");
     delay(adzan);
@@ -1328,13 +1328,13 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(ElektronMart5x6);
+    Disp.setFont(ElektronMart6x8);
     textCenter(0, "ADZAN");
     textCenter(8, "SUBUH");
     delay(adzan);
     Disp.clear();
     iqmh = config.iqmhs;
-    menitiqmh = iqmh - 1;
+    menitiqmh = iqmh;
     tampilanutama = 1;
   }
 
@@ -1350,19 +1350,19 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes && Hari != 5) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(ElektronMart5x6);
+    Disp.setFont(ElektronMart6x8);
     textCenter(0, "ADZAN");
     textCenter(8, "DZUHUR");
     delay(adzan);
     Disp.clear();
     iqmh = config.iqmhd;
-    menitiqmh = iqmh - 1;
+    menitiqmh = iqmh;
     tampilanutama = 1;
 
   } else if (Hor == hours && Min == minutes && Hari == 5) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(ElektronMart5x6);
+    Disp.setFont(ElektronMart6x8);
     textCenter(0, "ADZAN");
     textCenter(8, "JUM'AT");
     delay(adzan);
@@ -1381,13 +1381,13 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(ElektronMart5x6);
+    Disp.setFont(ElektronMart6x8);
     textCenter(0, "ADZAN");
     textCenter(8, "ASHAR");
     delay(adzan);
     Disp.clear();
     iqmh = config.iqmha;
-    menitiqmh = iqmh - 1;
+    menitiqmh = iqmh;
     tampilanutama = 1;
   }
 
@@ -1403,13 +1403,13 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(ElektronMart5x6);
+    Disp.setFont(ElektronMart6x8);
     textCenter(0, "ADZAN");
     textCenter(8, "MAGHRIB");
     delay(adzan);
     Disp.clear();
     iqmh = config.iqmhm;
-    menitiqmh = iqmh - 1;
+    menitiqmh = iqmh;
     tampilanutama = 1;
   }
 
@@ -1425,13 +1425,13 @@ void AlarmSholat() {
   if (Hor == hours && Min == minutes) {
     BuzzerPendek();
     Disp.clear();
-    Disp.setFont(ElektronMart5x6);
+    Disp.setFont(ElektronMart6x8);
     textCenter(0, "ADZAN");
     textCenter(8, "ISYA'");
     delay(adzan);
     Disp.clear();
     iqmh = config.iqmhi;
-    menitiqmh = iqmh - 1;
+    menitiqmh = iqmh;
     tampilanutama = 1;
   }
 
@@ -1461,8 +1461,9 @@ void Iqomah() {
     
     if (menitiqmh == 0 && detikiqmh == 0){
         Disp.clear();
-        textCenter(0, "LURUS 8");
-        textCenter(9, "RAPAT");
+        Disp.setFont(ElektronMart5x6);
+        textCenter(0, "LURUSKAN DAN");
+        textCenter(8, "RAPATKAN SHAF");
         BuzzerPanjang();
         detikiqmh = 59;
         Disp.clear();
