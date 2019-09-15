@@ -25,7 +25,7 @@ Eksternal Library
 
 email : bonny@grobak.net - www.grobak.net - www.elektronmart.com
 
-Updated : 15 September 2019
+Updated : 16 September 2019
 */
 
 
@@ -274,15 +274,18 @@ void wifiConnect() {
 void ICACHE_RAM_ATTR refresh() { 
   
   Disp.refresh();
-  timer0_write(ESP.getCycleCount() + 40000);  
+  timer0_write(ESP.getCycleCount() + 80000);  
 
 }
 
 void Disp_init() {
   
   Disp.start();
+  noInterrupts();
+  timer0_isr_init();
   timer0_attachInterrupt(refresh);
-  timer0_write(ESP.getCycleCount() + 40000);
+  timer0_write(ESP.getCycleCount() + 80000);
+  interrupts();
   Disp.clear();
   
 }
@@ -582,8 +585,7 @@ void handleSettingDispUpdate() {
     loadDispConfig(fileconfigdisp, configdisp);
     
     delay(500);
-    timer0_attachInterrupt(refresh);
-    timer0_write(ESP.getCycleCount() + 40000);
+    Disp_init();
 
     Disp.setBrightness(configdisp.cerah);
   
@@ -668,8 +670,7 @@ void handleSettingJwsUpdate() {
     loadJwsConfig(fileconfigjws, config);
     
     delay(500);
-    timer0_attachInterrupt(refresh);
-    timer0_write(ESP.getCycleCount() + 40000);
+    Disp_init();
   
   }  
 
@@ -742,8 +743,7 @@ void handleSettingInfoUpdate() {
     loadInfoConfig(fileconfiginfo, configinfo);
     
     delay(500);
-    timer0_attachInterrupt(refresh);
-    timer0_write(ESP.getCycleCount() + 40000);
+    Disp_init();
   
   }  
 
@@ -814,8 +814,7 @@ void handleSettingWifiUpdate() {
     loadWifiConfig(fileconfigwifi, configwifi);
 
     delay(500);
-    timer0_attachInterrupt(refresh);
-    timer0_write(ESP.getCycleCount() + 40000);
+    Disp_init();
 
   } 
 
