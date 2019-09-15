@@ -1,6 +1,6 @@
 # Arduino Project Grobak.Net
 
-## LED JWS - Jam Waktu Sholat
+## LED JWS 2 Panel - Jam Waktu Sholat
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=HxDZwUOh890" target="_blank"><img src="http://img.youtube.com/vi/HxDZwUOh890/0.jpg" 
 alt="Jam Waktu Sholat JWS 2 Panel LED Clock Prayer Times NodeMCU ESP8266 DMD P10 Arduino Web Config V3" width="240" height="180" border="10" /></a>
