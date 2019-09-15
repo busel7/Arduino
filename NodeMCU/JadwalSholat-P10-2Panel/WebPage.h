@@ -7,7 +7,7 @@ char setwaktu[] PROGMEM = R"=====(
 <html>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <head>
-<title>Car Display</title>
+<title>JWSP10 ELEKTRONMART</title>
 <style> body { width: 97% ; text-align: center; } input, select, button, textarea { max-width: 100% ; margin: 5px; padding: 5px; border-radius: 7px; } meter, progress, output { max-width: 100% ; } h1 { color: grey; } .note { color: #555; font-size:1em;} .info { background-color: #eee; border-radius: 3px; padding-top: 17px; margin: 5px;} .tombol { background-color: #ccc; margin: 20px; padding: 10px; border-radius: 10px; text-decoration: none;}</style>
 </head>
 <body onload='process()'>
@@ -38,6 +38,7 @@ char setwaktu[] PROGMEM = R"=====(
 </table>
 <br><br>
 <h5><a class ='tombol' href="/setjws">Jam Sholat</a></h5>
+<h5><a class ='tombol' href="/setinfo">Informasi</a></h5>
 <h5><a class ='tombol' href="/setwifi">Wifi</a></h5>
 <h5><a class ='tombol' href="/setdisplay">Display</a></h5>
 <br><br><br>
@@ -118,7 +119,7 @@ char setjws[] PROGMEM = R"=====(
 <html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <head>
-<title>Car Display</title>
+<title>JWSP10 ELEKTRONMART</title>
 <style> body { width: 97% ; text-align: center; } td {text-align: center;} input, select, button, textarea { max-width: 100% ; margin: 5px; padding: 5px; border-radius: 7px; } meter, progress, output { max-width: 100% ; } h1,h2,h3,h4 { color: grey; } .note { color: #555; font-size:1em;} .info { background-color: #eee; border-radius: 3px; padding-top: 17px; margin: 5px;} .tombol { background-color: #ccc; margin: 20px; padding: 10px; border-radius: 10px; text-decoration: none;}</style>
 </head>
 <body onload='process()'>
@@ -180,25 +181,13 @@ char setjws[] PROGMEM = R"=====(
 </table>
 <br>
 <div>
-  <label for="nama">Nama</label>
-  <input id="nama" placeholder="Nama"/>
-</div>
-<div>
-  <label for="info1">Info Satu</label>
-  <input id="info1" placeholder="Ini adalah isi dari Info Satu"/>
-</div>
-<div>
-  <label for="info2">Info Dua</label>
-  <input id="info2" placeholder="Ini adalah isi dari Info Dua"/>
-</div>
-<br>
-<div>
   <button onClick="setJws()"> Simpan </button>
 </div>
 </form>
 <br><br>
 
 <h5><a class ='tombol' href="/">Kembali</a></h5>
+<h5><a class ='tombol' href="/setinfo">Informasi</a></h5>
 <h5><a class ='tombol' href="/setwifi">Wifi</a></h5>
 <h5><a class ='tombol' href="/setdisplay">Display</a></h5>
 <br><br><br>
@@ -274,18 +263,6 @@ function handleServerResponse(){
    message = xmldoc[0].firstChild.nodeValue;
    document.getElementById('zonawaktu').value=message;
 
-   xmldoc = xmlResponse.getElementsByTagName('rNama');
-   message = xmldoc[0].firstChild.nodeValue;
-   document.getElementById('nama').value=message;
-
-   xmldoc = xmlResponse.getElementsByTagName('rInfo1');
-   message = xmldoc[0].firstChild.nodeValue;
-   document.getElementById('info1').value=message;
-
-   xmldoc = xmlResponse.getElementsByTagName('rInfo2');
-   message = xmldoc[0].firstChild.nodeValue;
-   document.getElementById('info2').value=message;
-
  }
 }
 
@@ -303,10 +280,7 @@ function setJws() {
   var latitude = document.getElementById("latitude").value;
   var longitude = document.getElementById("longitude").value;
   var zonawaktu = document.getElementById("zonawaktu").value;
-  var nama = document.getElementById("nama").value;
-  var info1 = document.getElementById("info1").value;
-  var info2 = document.getElementById("info2").value;
-  var datajws = {iqmhs:iqmhs, iqmhd:iqmhd, iqmha:iqmha, iqmhm:iqmhm, iqmhi:iqmhi, durasiadzan:durasiadzan, ihti:ihti, latitude:latitude, longitude:longitude, zonawaktu:zonawaktu, nama:nama, info1:info1, info2:info2};
+  var datajws = {iqmhs:iqmhs, iqmhd:iqmhd, iqmha:iqmha, iqmhm:iqmhm, iqmhi:iqmhi, durasiadzan:durasiadzan, ihti:ihti, latitude:latitude, longitude:longitude, zonawaktu:zonawaktu};
 
   var xhr = new XMLHttpRequest();
   var url = "/settingjws";
@@ -325,11 +299,119 @@ function setJws() {
 
 
 
+char setinfo[] PROGMEM = R"=====(
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+<title>JWSP10 ELEKTRONMART</title>
+<style> body { width: 97% ; text-align: center; } td {text-align: center;} input, select, button, textarea { max-width: 100% ; margin: 5px; padding: 5px; border-radius: 7px; } meter, progress, output { max-width: 100% ; } h1,h2,h3,h4 { color: grey; } .note { color: #555; font-size:1em;} .info { background-color: #eee; border-radius: 3px; padding-top: 17px; margin: 5px;} .tombol { background-color: #ccc; margin: 20px; padding: 10px; border-radius: 10px; text-decoration: none;}</style>
+</head>
+<body onload='process()'>
+<h1>Informasi</h1>
+
+<form>
+<div>
+  <label for="nama">Nama</label>
+  <input id="nama" placeholder="Nama"/>
+</div>
+<div>
+  <label for="info1">Info Satu</label>
+  <input id="info1" placeholder="Ini adalah isi dari Info Satu"/>
+</div>
+<div>
+  <label for="info2">Info Dua</label>
+  <input id="info2" placeholder="Ini adalah isi dari Info Dua"/>
+</div>
+<br>
+<div>
+  <button onClick="setInfo()"> Simpan </button>
+</div>
+</form>
+<br><br>
+
+<h5><a class ='tombol' href="/">Kembali</a></h5>
+<h5><a class ='tombol' href="/setjws">Jam Sholat</a></h5>
+<h5><a class ='tombol' href="/setwifi">Wifi</a></h5>
+<h5><a class ='tombol' href="/setdisplay">Display</a></h5>
+<br><br><br>
+<a class ='tombol' href="http://elektronmart.com/">ElektronMart.Com</a><br><br><br>
+<a class ='tombol' href="https://www.bukalapak.com/u/elektronmart">Bukalapak</a><span> </span>
+<a class ='tombol' href="https://www.tokopedia.com/elektronmartcom">Tokopedia</a><br>
+
+</body>
+<script>
+
+
+var xmlHttp=createXmlHttpObject();
+
+function createXmlHttpObject(){
+ if(window.XMLHttpRequest){
+    xmlHttp=new XMLHttpRequest();
+ }else{
+    xmlHttp=new ActiveXObject('Microsoft.XMLHTTP');// code for IE6, IE5
+ }
+ return xmlHttp;
+}
+
+function process(){
+ if(xmlHttp.readyState==0 || xmlHttp.readyState==4){
+   xmlHttp.open('PUT','xml',true);
+   xmlHttp.onreadystatechange=handleServerResponse;
+   xmlHttp.send(null);
+ }
+
+}
+
+function handleServerResponse(){
+ if(xmlHttp.readyState==4 && xmlHttp.status==200){
+   xmlResponse=xmlHttp.responseXML;
+
+   xmldoc = xmlResponse.getElementsByTagName('rNama');
+   message = xmldoc[0].firstChild.nodeValue;
+   document.getElementById('nama').value=message;
+
+   xmldoc = xmlResponse.getElementsByTagName('rInfo1');
+   message = xmldoc[0].firstChild.nodeValue;
+   document.getElementById('info1').value=message;
+
+   xmldoc = xmlResponse.getElementsByTagName('rInfo2');
+   message = xmldoc[0].firstChild.nodeValue;
+   document.getElementById('info2').value=message;
+
+ }
+}
+
+
+function setInfo() {
+  console.log("tombol telah ditekan!");
+
+  var nama = document.getElementById("nama").value;
+  var info1 = document.getElementById("info1").value;
+  var info2 = document.getElementById("info2").value;
+  var datainfo = {nama:nama, info1:info1, info2:info2};
+
+  var xhr = new XMLHttpRequest();
+  var url = "/settinginfo";
+
+  xhr.onreadystatechange = function() {
+    if(this.onreadyState == 4  && this.status == 200) {
+      console.log(xhr.responseText);
+    }
+  };
+  xhr.open("POST", url, true);
+  xhr.send(JSON.stringify(datainfo));
+};
+</script>
+</html>
+)=====";
+
+
+
 char setwifi[] PROGMEM = R"=====(
 <html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <head>
-<title>Car Display</title>
+<title>JWSP10 ELEKTRONMART</title>
 <style> body { width: 97% ; text-align: center; } input, select, button, textarea { max-width: 100% ; margin: 5px; padding: 5px; border-radius: 7px; } meter, progress, output { max-width: 100% ; } h1 { color: grey; } .note { color: #555; font-size:1em;} .info { background-color: #eee; border-radius: 3px; padding-top: 17px; margin: 5px;} .tombol { background-color: #ccc; margin: 20px; padding: 10px; border-radius: 10px; text-decoration: none;}</style>
 </head>
 <body onload='process()'>
@@ -421,7 +503,7 @@ char setdisplay[] PROGMEM = R"=====(
 <html>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <head>
-  <title>Display</title>
+  <title>JWSP10 ELEKTRONMART</title>
   <style> body { width: 97% ; text-align: center; } input, select, button, textarea { max-width: 100% ; margin: 5px; padding: 5px; border-radius: 7px; } meter, progress, output { max-width: 100% ; } h1 { color: grey; } .note { color: #555; font-size:1em;} .info { background-color: #eee; border-radius: 3px; padding-top: 17px; margin: 5px;} .tombol { background-color: #ccc; margin: 20px; padding: 10px; border-radius: 10px; text-decoration: none;}</style>
 </head>
 <body onload='process()'>
@@ -435,6 +517,7 @@ char setdisplay[] PROGMEM = R"=====(
 <br><br>
 <h5><a class ='tombol' href="/">Kembali</a></h5>
 <h5><a class ='tombol' href="/setjws">Jam Sholat</a></h5>
+<h5><a class ='tombol' href="/setinfo">Informasi</a></h5>
 <h5><a class ='tombol' href="/setwifi">Wifi</a></h5>
 <br><br>
 <a class ='tombol' href="http://elektronmart.com/">ElektronMart.Com</a><br><br><br>
