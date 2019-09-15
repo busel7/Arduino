@@ -432,6 +432,7 @@ char setwifi[] PROGMEM = R"=====(
 <br><br>
 <h5><a class ='tombol' href="/">Kembali</a></h5>
 <h5><a class ='tombol' href="/setjws">Jam Sholat</a></h5>
+<h5><a class ='tombol' href="/setinfo">Informasi</a></h5>
 <h5><a class ='tombol' href="/setdisplay">Display</a></h5>
 <br><br><br>
 <a class ='tombol' href="http://elektronmart.com/">ElektronMart.Com</a><br><br><br>
