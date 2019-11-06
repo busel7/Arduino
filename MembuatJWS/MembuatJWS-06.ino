@@ -21,7 +21,10 @@ Project Git
 - https://github.com/busel7/Arduino
 
 Eksternal Library
-- HJS589(DMD3 porting for ESP8266 by Ahmad Herman) < DMD3 by Wardi Utari @ MFH Robotic (info https://www.facebook.com/MFH.Robotic/)) < DMD : https://github.com/freetronics/DMD
+- HJS589(DMD3 porting for ESP8266 by Ahmad Herman) 
+  < DMD3 by Azis Kurosaki 
+  < DMD2(https://github.com/freetronics/DMD2) 
+  < DMD (https://github.com/freetronics/DMD)
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
 - ArduinoJson V6 : https://github.com/bblanchon/ArduinoJson
