@@ -18,9 +18,7 @@ o Perlu Power Eksternal 5V ke LED P10.
 o Saat Flashing (upload program) cabut sementara pin untuk buzzer.
 
 Eksternal Library
-- HJS589(DMD3 porting for ESP8266 by Ahmad Herman) 
-  < DMD3 by Azis Kurosaki 
-  < DMD2(https://github.com/freetronics/DMD2) 
+- HJS589(DMD porting for ESP8266 by dmk007)
   < DMD (https://github.com/freetronics/DMD)
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
