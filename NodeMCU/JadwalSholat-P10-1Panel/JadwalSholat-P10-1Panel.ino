@@ -19,7 +19,7 @@ o Saat Flashing (upload program) cabut sementara pin untuk buzzer.
 
 Eksternal Library
 - HJS589(DMD porting for ESP8266 by dmk007)
-  < DMD (https://rweather.github.io/arduino-projects/classDMD.html - https://github.com/freetronics/DMD)
+  < DMD (https://rweather.github.io/arduino-projects/classDMD.html)
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
 - RTC DS3231 : https://github.com/Makuna/Rtc
 - ArduinoJson V6 : https://github.com/bblanchon/ArduinoJson
