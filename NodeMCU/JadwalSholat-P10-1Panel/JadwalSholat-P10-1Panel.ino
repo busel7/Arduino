@@ -24,9 +24,11 @@ Eksternal Library
 - RTC DS3231 : https://github.com/Makuna/Rtc
 - ArduinoJson V6 : https://github.com/bblanchon/ArduinoJson
 
-email : bonny@grobak.net - www.grobak.net - www.elektronmart.com
+Toko Perlengkapan dan Sukucadang : www.elektronmart.com
 
-Updated : 7 September 2019
+email : bonny@grobak.net - www.grobak.net  
+
+Updated : 10 Februari 2019
 */
 
 
@@ -40,7 +42,6 @@ Updated : 7 September 2019
 RtcDS3231<TwoWire> Rtc(Wire);
 
 #include <HJS589.h>
-#include <fonts/Arial_Black_16.h>
 
 #include <fonts/ElektronMart6x8.h>
 #include <fonts/ElektronMart6x16.h>
@@ -366,6 +367,11 @@ void setup() {
 
   Serial.begin(9600);
 
+  //Buzzer
+  pinMode(buzzer, OUTPUT);
+  digitalWrite(buzzer, LOW);
+  delay(50);
+
   //RTC D3231
 
   int rtn = I2C_ClearBus(); // clear the I2C bus first before calling Wire.begin()
@@ -488,9 +494,6 @@ void setup() {
   
 
   //Buzzer
-  pinMode(buzzer, OUTPUT);
-  digitalWrite(buzzer, LOW);
-  delay(50);
 
   BuzzerPendek();
 
@@ -1754,7 +1757,7 @@ void branding() {
   delay(1000);
 
   Disp.clear();
-  Disp.setFont(Arial_Black_16); 
+  Disp.setFont(ElektronMart6x16); 
   Disp.drawText(-2,1, "JWS");
   delay(1000);
 
