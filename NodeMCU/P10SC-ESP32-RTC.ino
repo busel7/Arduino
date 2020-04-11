@@ -17,8 +17,8 @@
 
     RTC
     ---
-    SDA         16
-    SCL         17
+    SDA         32
+    SCL         33
 
 
     Bonny Useful (ElektronMart.Com)
