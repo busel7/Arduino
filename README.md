@@ -14,6 +14,28 @@ Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3231 
 - Hitung Mundur Iqomah
 - Jam Kecil pada baris atas dan Update scroll teks malului Wifi pada baris bawah
 
+### Hardware
+
+Controller JWS FullSet PCB ElektronMart JWSNodeMCUP10 Board v2.0
+- https://tokopedia.com/elektronmartcom/controller-jws-murottal-quad-multi-panel-wifi-mp3-jam-jadwal-sholat
+- https://www.bukalapak.com/p/elektronik/elektronik-lainnya/315l4pa-jual-controller-jws-murottal-quad-multi-panel-wifi-mp3-jam-jadwal-sholat-led-masjid
+
+LED Panel P10
+- https://www.tokopedia.com/elektronmartcom/led-display-panel-p10-smd-outdoor-green-hijau
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/2qkxq35-jual-led-display-panel-p10-smd-outdoor-green-hijau
+
+
+JWS KIT
+- https://tokopedia.com/elektronmartcom/jws-kit-controller-led-p10-hub12-mp3-murottal-jadwal-sholat-digital
+- https://www.bukalapak.com/p/elektronik/media-player-set-top-box/36buedq-jual-jws-kit-controller-led-p10-hub12-mp3-murottal-jadwal-sholat-digital
+
+
+PCB Only
+- https://tokopedia.com/elektronmartcom/pcb-jws-nodemcu-board-2-0-elektronmart-led-p10-arduino
+- https://www.bukalapak.com/p/elektronik/komponen-elektronik/2aiovn2-jual-pcb-jws-nodemcu-board-2-0-elektronmart-led-p10-arduino
+
+
+
 ### Pin on DMD LED P10 Panel
 
 | DMD P10 | GPIO | NODEMCU | 
@@ -43,9 +65,16 @@ Jadwal Waktu Sholat menggunakan NodeMCU atau ESP8266, LED Panel P10, RTC DS3231 
 | -      | GND         |
 
 ### Eksternal Library
-- DMD2 : https://github.com/freetronics/DMD2
+- DMDESP : https://github.com/busel7/DMDESP
 - PrayerTime : https://github.com/asmaklad/Arduino-Prayer-Times
-- RTC DS3231 : https://github.com/SodaqMoja/Sodaq_DS3231
+- RTC DS3231 : https://github.com/Makuna/Rtc
+- ArduinoJson V6 : https://github.com/bblanchon/ArduinoJson
+- F1kM_Hisab : https://github.com/wardi1971/F1kM_Hisab
+
+Tools : 
+- Desain bitmap dan font : http://dotmatrixtool.com
+- LittleFS Uploader : https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases
+
         
 ### Catatan : 
 - Perlu Power Eksternal 5V ke LED P10.
