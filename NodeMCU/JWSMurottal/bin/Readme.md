@@ -21,33 +21,33 @@ Catatan Perubahan:
 
 JWS MUROTTAL QUAD V3.1
 -----
-o Player Murottal dapat dipilih per Surah, Juz Amma dan Seluruh Al Quran, dan juga berdasarkan Qori (pembaca).
-o Setting lewat Wifi dgn Browser (Tanpa Aplikasi bisa dari HP / Laptop)
-o Jam dan Tanggal, Format Jam default 24, dapat diganti ke format 12
-o Tanggal Hijriah dengan pilihan derajat Hilal
-o Jadwal 5 Waktu Sholat Wajib dan Tanbih Imsak dengan Koreksi tiap Waktu Sholat (Ihtiyath)
-o Alarm Waktu Sholat
-o Auto Tarhim Beberapa Menit Sebelum Adzan dapat di Set Perwaktu Sholat
-o Hitung Mundur Iqomah
-o Running Teks Nama Masjid, Info 1, Info 2 dan Laporan
-o Lokasi dapat dipilih berdasarkan Kota atau Kabupaten dan bisa juga dengan Koordinat GPS Latitude dan Longitude agar lebih akurat.
-o Auto Redup jam 22 sampai jam 3.
-o Fungsi Relay Otomatis dan Kontrol Manual. Tersedia port VCC GND Data untuk Relay (module relay tidak termasuk)
-o Wifi Manager (Dapat dihubungkan secara langsung atau dengan Lokal Network)
-o Bisa Update Software Firmware OTA (upload Firmware melalui Web Wifi tanpa kabel)
+- Player Murottal dapat dipilih per Surah, Juz Amma dan Seluruh Al Quran, dan juga berdasarkan Qori (pembaca).
+- Setting lewat Wifi dgn Browser (Tanpa Aplikasi bisa dari HP / Laptop)
+- Jam dan Tanggal, Format Jam default 24, dapat diganti ke format 12
+- Tanggal Hijriah dengan pilihan derajat Hilal
+- Jadwal 5 Waktu Sholat Wajib dan Tanbih Imsak dengan Koreksi tiap Waktu Sholat (Ihtiyath)
+- Alarm Waktu Sholat
+- Auto Tarhim Beberapa Menit Sebelum Adzan dapat di Set Perwaktu Sholat
+- Hitung Mundur Iqomah
+- Running Teks Nama Masjid, Info 1, Info 2 dan Laporan
+- Lokasi dapat dipilih berdasarkan Kota atau Kabupaten dan bisa juga dengan Koordinat GPS Latitude dan Longitude agar lebih akurat.
+- Auto Redup jam 22 sampai jam 3.
+- Fungsi Relay Otomatis dan Kontrol Manual. Tersedia port VCC GND Data untuk Relay (module relay tidak termasuk)
+- Wifi Manager (Dapat dihubungkan secara langsung atau dengan Lokal Network)
+- Bisa Update Software Firmware OTA (upload Firmware melalui Web Wifi tanpa kabel)
 
 
 JWS MUROTTAL QUAD V3.0
 -----
-o Player Murottal dapat dipilih per Surah, Juz Amma dan Seluruh Al Quran, dan juga berdasarkan Qori (pembaca).
-o Setting lewat Wifi dgn Browser (Tanpa Aplikasi bisa dari HP / Laptop)
-o Jam dan Tanggal, Format Jam default 24, dapat diganti ke format 12
-o Tanggal Hijriah dengan pilihan derajat Hilal
-o Jadwal 5 Waktu Sholat Wajib dan Tanbih Imsak
-o Alarm Waktu Sholat
-o Auto Tarhim Beberapa Menit Sebelum Adzan
-o Hitung Mundur Iqomah
-o Running Teks Nama Masjid, Info 1, Info 2 dan Laporan
-o Lokasi dapat dipilih berdasarkan Kota atau Kabupaten dan bisa juga dengan Koordinat GPS Latitude dan Longitude agar lebih akurat.
-o Fungsi Relay Otomatis dan Kontrol Manual. Tersedia port VCC GND Data untuk Relay (module relay tidak termasuk)
-o Wifi Manager (Dapat dihubungkan secara langsung atau dengan Lokal Network)
+- Player Murottal dapat dipilih per Surah, Juz Amma dan Seluruh Al Quran, dan juga berdasarkan Qori (pembaca).
+- Setting lewat Wifi dgn Browser (Tanpa Aplikasi bisa dari HP / Laptop)
+- Jam dan Tanggal, Format Jam default 24, dapat diganti ke format 12
+- Tanggal Hijriah dengan pilihan derajat Hilal
+- Jadwal 5 Waktu Sholat Wajib dan Tanbih Imsak
+- Alarm Waktu Sholat
+- Auto Tarhim Beberapa Menit Sebelum Adzan
+- Hitung Mundur Iqomah
+- Running Teks Nama Masjid, Info 1, Info 2 dan Laporan
+- Lokasi dapat dipilih berdasarkan Kota atau Kabupaten dan bisa juga dengan Koordinat GPS Latitude dan Longitude agar lebih akurat.
+- Fungsi Relay Otomatis dan Kontrol Manual. Tersedia port VCC GND Data untuk Relay (module relay tidak termasuk)
+- Wifi Manager (Dapat dihubungkan secara langsung atau dengan Lokal Network)
