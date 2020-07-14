@@ -29,6 +29,11 @@
     o SmartMatrix - Louis Beaudoin (Pixelmatix) - https://github.com/pixelmatix/SmartMatrix/tree/teensylc
     o RTC - Makuna - https://github.com/Makuna/Rtc
     o F1kM_Hisab - Wardi Utari - https://github.com/wardi1971/F1kM_Hisab
+    
+    PCB :
+    o https://www.tokopedia.com/elektronmartcom/pcb-controller-led-rgb-nodemcu-esp-32-esp32-smartmatrix-arduino
+    o https://www.bukalapak.com/p/elektronik/elektronik-lainnya/35vq5s0-jual-pcb-controller-led-rgb-nodemcu-esp-32-esp32-smartmatrix-arduino-elektronmart
+    o https://shopee.co.id/PCB-Controller-LED-RGB-NodeMCU-ESP-32-ESP32-SmartMatrix-Arduino-ElektronMart-i.139057740.4635178639
 
     Updated : 14 Juli 2020
     
