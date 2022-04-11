@@ -1,4 +1,6 @@
-Mohon maaf, dengan berat hati, karena terjadi BANYAK PENYALAH GUNAAN oleh pihak-pihak yang tidak bertanggung jawab, saat ini FIRMWARE JWS MUROTTAL kami tarik dari repository public. Untuk mengantisipasi penyalah gunaan, kami hanya mendistribusikannya dalam bentuk Hardware NodeMCU ESP8266 yang telah kami proteksi yang bisa didapatkan di marketplace berikut:
+Mohon maaf, dengan berat hati, karena terjadi BANYAK PENYALAH GUNAAN oleh pihak-pihak yang tidak bertanggung jawab, saat ini FIRMWARE JWS MUROTTAL kami tarik dari repository public dan pindah ke google drive dengan mengisi form berikut https://forms.gle/kQEnmgrpQR5WdZBh8 link untuk download firmware akan segera kami kirim melalui email terdaftar setelah data terverifikasi.
+
+Untuk mengantisipasi penyalah gunaan, kami hanya mendistribusikannya dalam bentuk Hardware NodeMCU ESP8266 yang telah kami proteksi yang bisa didapatkan di marketplace berikut:
 
 - Tokopedia : https://tokopedia.link/wIYpmTrv8ob
 - Shopee : https://shopee.co.id/PCB-Controller-Jam-Sholat-JWS-NodeMCU-Board-2.0-ElektronMart-LED-P10-Arduino-i.139057740.7134254234
