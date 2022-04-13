@@ -7,5 +7,6 @@ Untuk mengantisipasi penyalah gunaan, kami hanya mendistribusikannya dalam bentu
 - Bukalapak : https://www.bukalapak.com/p/elektronik/komponen-elektronik/2aiovn2-jual-pcb-jws-nodemcu-board-2-0-elektronmart-led-p10-arduino
 
 Perbedaan NodeMCU yang sudah terisi JWS Murottal Quad dengan JWS Murottal DIY
-o JWS DIY hanya untuk penggunaan secara pribadi dan keperluan sosial
-o JWS Quad firmware terbaru yang rutin kami update dan publish reviewnya di yutube kami.
+
+- JWS DIY hanya untuk penggunaan secara pribadi dan keperluan sosial
+- JWS Quad firmware terbaru yang rutin kami update dan publish reviewnya di yutube kami.
