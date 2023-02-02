@@ -8,5 +8,5 @@ Untuk mengantisipasi penyalah gunaan, kami hanya mendistribusikannya dalam bentu
 
 Perbedaan NodeMCU yang sudah terisi JWS Murottal Quad dengan JWS Murottal DIY
 
-- JWS DIY hanya untuk penggunaan secara pribadi dan keperluan sosial, dengan fitur minimal dan kompatibilitas terbatas dengan beberapa chip DFPlayer.
+- JWS DIY hanya untuk penggunaan secara pribadi dan keperluan sosial.
 - JWS Quad firmware terbaru yang rutin kami update dan publish reviewnya di yutube kami, dengan fitur yang lebih lengkap dan kompatibilitas yang lebih banyak dengan chip DFPlayer.
