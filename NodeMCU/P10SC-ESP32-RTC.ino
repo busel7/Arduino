@@ -24,16 +24,24 @@
     Bonny Useful (ElektronMart.Com)
 
     Library : 
-    o SmartMatrix - Louis Beaudoin (Pixelmatix) - https://github.com/pixelmatix/SmartMatrix/tree/teensylc
-    o RTC - Makuna - https://github.com/Makuna/Rtc 
+    o SmartMatrix 4.0.3 - Louis Beaudoin (Pixelmatix) - https://github.com/pixelmatix/SmartMatrix/tree/teensylc
+    o RTC - Makuna - https://github.com/Makuna/Rtc
 
+    PCB :
+    o https://www.tokopedia.com/elektronmartcom/pcb-controller-led-rgb-nodemcu-esp-32-esp32-smartmatrix-arduino
+    o https://www.bukalapak.com/p/elektronik/elektronik-lainnya/35vq5s0-jual-pcb-controller-led-rgb-nodemcu-esp-32-esp32-smartmatrix-arduino-elektronmart
+    o https://shopee.co.id/PCB-Controller-LED-RGB-NodeMCU-ESP-32-ESP32-SmartMatrix-Arduino-ElektronMart-i.139057740.4635178639
+
+    Updated : 27 Agustus 2024
     
 */
 
 #include <Wire.h>
 #include <RtcDS3231.h>
 RtcDS3231<TwoWire> Rtc(Wire);
-#include <SmartMatrix3.h>
+
+#include <MatrixHardware_ESP32_V0.h>
+#include <SmartMatrix.h>
 
 #define COLOR_DEPTH 24                  // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
 const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
