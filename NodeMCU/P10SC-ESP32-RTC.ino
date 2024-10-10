@@ -23,7 +23,8 @@
 
     Bonny Useful (ElektronMart.Com)
 
-    Library : 
+    Board & Library : 
+    o ESP32 1.0.6 - espressif
     o SmartMatrix 4.0.3 - Louis Beaudoin (Pixelmatix) - https://github.com/pixelmatix/SmartMatrix/tree/teensylc
     o RTC - Makuna - https://github.com/Makuna/Rtc
 
