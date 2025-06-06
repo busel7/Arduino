@@ -4,7 +4,7 @@
 // - Tokopedia.com  : https://tk.tokopedia.com/ZSkBFhwgS/
 // - Shopee.co.id   : https://shopee.co.id/elektronmart/4635178639
 //
-// ENVIRONTMENT :
+// ENVIRONMENT :
 // - Sistem Operasi Ubuntu 24.04.2 LTS
 // - Arduino IDE 2.3.6
 // - ESP32 Core 3.2.0 - espresif
